@@ -18,13 +18,13 @@ const login = async (req, res, next) => {
         let existingClient;
         if (email) {
             existingClient = await Employ.findOne({ email });
-            console.log(existingClient,'Employ')
+            console.log(existingClient, 'Employ')
         }
 
         if (!existingClient) {
             return res.status(HttpCodes.NotFound).json({ success: false, message: Messages.UserNotFound });
         }
-        console.log(password, existingClient.password,'qqqqqqqqqqqqqq')
+        console.log(password, existingClient.password, 'qqqqqqqqqqqqqq')
 
         // Check if the provided password matches the stored password
         const passwordMatch = await bcrypt.compare(password, existingClient.password);
@@ -78,14 +78,16 @@ const register = async (req, res, next) => {
             password: hashedPassword
         })
 
+
         await newClient.save();
+
 
         res.status(HttpCodes.Created).json({
             success: true,
             message: Messages.RegistrationSuccess,
         });
     } catch (error) {
-        console.log(error,"error")
+        console.log(error, "error")
         res.status(HttpCodes.InternalServerError).json({ success: false, message: Messages.InternalServerError });
     }
 };
