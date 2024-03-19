@@ -53,10 +53,6 @@ const login = async (req, res, next) => {
 
 const register = async (req, res, next) => {
     try {
-<<<<<<< HEAD
-=======
-        let userId;
->>>>>>> 7ff7495 (auth funtionality)
         const { email, password } = req.body;
 
         console.log(req.body)
@@ -82,12 +78,7 @@ const register = async (req, res, next) => {
             password: hashedPassword
         })
 
-<<<<<<< HEAD
      await newClient.save();
-=======
-        const ans = await newClient.save();
-
->>>>>>> 7ff7495 (auth funtionality)
 
 
         res.status(HttpCodes.Created).json({
