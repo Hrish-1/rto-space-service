@@ -53,7 +53,6 @@ const login = async (req, res, next) => {
 
 const register = async (req, res, next) => {
     try {
-        let userId;
         const { email, password } = req.body;
 
         console.log(req.body)
@@ -79,8 +78,7 @@ const register = async (req, res, next) => {
             password: hashedPassword
         })
 
-        const ans = await newClient.save();
-
+     await newClient.save();
 
 
         res.status(HttpCodes.Created).json({
