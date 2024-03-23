@@ -58,7 +58,7 @@ export const createEntry = (req, res) => {
     }
     try {
       // Generate EntryID
-      const entryID = generateEntryID();
+      const entryID = await generateEntryID();
       console.log(entryID, 'entryID')
       // Construct new entry data with generated EntryID
       const entryData = {
