@@ -1,10 +1,26 @@
-// Utility function to generate EntryID
-function generateEntryID() {
-    const date = new Date();
-    const year = date.getFullYear().toString().substr(-2);
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const random = Math.random().toString().slice(2, 5);
-    return `${year}${month}-${random}`;
+import SerialNumber from './models/serialNumber.js'; // Import the SerialNumber schema
+
+async function generateEntryID() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.toLocaleString('default', { month: 'short' }).toLowerCase();
+  const yearMonth = `${year}${month}`;
+
+  // Find the document for the current yearMonth or create if it doesn't exist
+  let serialDoc = await SerialNumber.findOneAndUpdate(
+    { yearMonth },
+    { $inc: { serial: 1 } },
+    { new: true, upsert: true, setDefaultsOnInsert: true }
+  );
+
+  // If the month has changed, reset the serial number
+  if (!serialDoc) {
+    serialDoc = await SerialNumber.create({ yearMonth, serial: 1 });
   }
 
-  export default generateEntryID
+  // Return the formatted EntryID
+  const serialStr = serialDoc.serial.toString().padStart(3, '0');
+  return `${yearMonth}-${serialStr}`;
+}
+
+export default generateEntryID;
