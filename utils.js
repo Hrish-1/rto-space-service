@@ -6,6 +6,8 @@ async function generateEntryID() {
   const month = now.toLocaleString('default', { month: 'short' }).toLowerCase();
   const yearMonth = `${year}${month}`;
 
+
+  
   // Find the document for the current yearMonth or create if it doesn't exist
   let serialDoc = await SerialNumber.findOneAndUpdate(
     { yearMonth },
