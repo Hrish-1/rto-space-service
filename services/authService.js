@@ -78,8 +78,8 @@ const register = async (req, res, next) => {
             password: hashedPassword
         })
 
-     await newClient.save();
-
+    const ans= await newClient.save();
+console.log(ans,'ans')
 
         res.status(HttpCodes.Created).json({
             success: true,

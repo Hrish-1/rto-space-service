@@ -13,8 +13,10 @@ app.use(express.json()); // JSON Middleware
 connectDB()
 
 import  authRoutes from './routes/auth.js';
+import transactionRoutes from './routes/transactionRoutes.js';
 
 app.use('/api', authRoutes); 
+app.use('/api/transaction', transactionRoutes);
 
 app.listen(port, () => {
   console.log(`RTO app listening on port ${port}`)
