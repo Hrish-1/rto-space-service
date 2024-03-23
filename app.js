@@ -19,7 +19,8 @@ app.use(express.json()); // JSON Middleware
 
 connectDB()
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+import  authRoutes from './routes/auth.js';
+import transactionRoutes from './routes/transactionRoutes.js';
 
 // Serve static files from "uploads" directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
