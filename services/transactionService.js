@@ -4,23 +4,6 @@ import path from 'path';
 import fs from 'fs';
 import generateEntryID from '../utils.js';
 
-// If using CommonJS modules elsewhere, you might need the following:
-// const __dirname = path.dirname(new URL(import.meta.url).pathname);
-
-// Configure Multer and the storage path for uploads
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, 'uploads/');
-//   },
-//   filename: function (req, file, cb) {
-//     const userId = req.body.CustomerID; // Replace with how you get the userID
-//     const uniqueSuffix = `${userId}-${Date.now()}-${Math.round(Math.random() * 1E9)}`;
-//     cb(null, `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`);
-//   }
-// });
-
-// export const upload = multer({ storage: storage }).array('documents', 4);
-
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
