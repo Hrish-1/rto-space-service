@@ -75,3 +75,78 @@ const uploadsDir = './uploads';
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir);
 }
+
+
+
+export const getEntry = async (req, res) => {
+
+  let { page, size } = req.query;
+
+  page = parseInt(page, 10) || 0;
+  size = parseInt(size, 10) || 20;
+
+  try {
+    // Count total documents
+    const totalItems = await TransactionEntry.countDocuments();
+
+    // Calculate total pages
+    const totalPages = Math.ceil(totalItems / size);
+
+    // Find documents with pagination
+    const items = await TransactionEntry.find()
+      .skip(page * size)
+      .limit(size);
+
+    // Check if current page is first or last
+    const isFirst = page === 0;
+    const isLast = page === totalPages - 1;
+
+    res.json({
+      items,
+      page,
+      size,
+      isFirst,
+      isLast,
+      totalPages,
+      totalItems
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching entries', error: error.message });
+  }
+}
+
+
+export const updateEntry = (req, res) => {
+  upload(req, res, async (err) => {
+    if (err) {
+      // handle error
+      return res.status(500).json({ message: 'File upload failed', error: err.message });
+    }
+    const entryID = req.query.entryID; // Assuming entryID is passed as a URL parameter
+    try {
+      // Construct update object
+      let updateData = {};
+      Object.keys(req.body).forEach(key => {
+        updateData[key] = req.body[key];
+      });
+
+
+      // Handle file uploads if any
+      if (req.files) {
+        if (req.files['chasisProof']) updateData.chasisProofPdfName = req.files['chasisProof'][0].filename;
+        if (req.files['insuranceProof']) updateData.insuranceProofPdfName = req.files['insuranceProof'][0].filename;
+        if (req.files['pancardProof']) updateData.pancardProofPdfName = req.files['pancardProof'][0].filename;
+        if (req.files['addressProof']) updateData.addressProofPdfName = req.files['addressProof'][0].filename;
+      }
+
+      // Update the entry
+      const updatedEntry = await TransactionEntry.findOneAndUpdate({ EntryID: entryID }, updateData, { new: true });
+      if (!updatedEntry) {
+        return res.status(404).json({ message: 'Entry not found' });
+      }
+      res.status(200).json({ message: 'Entry updated successfully', entry: updatedEntry });
+    } catch (error) {
+      res.status(500).json({ message: 'Error updating entry', error: error.message });
+    }
+  });
+};
