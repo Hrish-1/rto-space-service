@@ -45,16 +45,16 @@ export const createEntry = (req, res) => {
       console.log(entryID, 'entryID')
       // Construct new entry data with generated EntryID
       const entryData = {
-        EntryID: entryID,
-        EntryDate: req.body.EntryDate,
-        Status: req.body.Status,
-        VehicleNo: req.body.VehicleNo,
-        CustomerID: req.body.CustomerID,
-        CustomerName: req.body.CustomerName,
-        FromRTO: req.body.FromRTO,
-        ToRTO: req.body.ToRTO,
-        Services: req.body.Services,
-        Amount: req.body.Amount,
+        entryId: entryID,
+        entryDate: req.body.entryDate,
+        status: req.body.status,
+        vehicleNo: req.body.vehicleNo,
+        customerId: req.body.customerId,
+        customerName: req.body.customerName,
+        fromRTO: req.body.fromRTO,
+        toRTO: req.body.toRTO,
+        services: req.body.services,
+        amount: req.body.amount,
         chasisProofPdfName: req.files['chasisProof'] ? req.files['chasisProof'][0].filename : undefined,
         insuranceProofPdfName: req.files['insuranceProof'] ? req.files['insuranceProof'][0].filename : undefined,
         pancardProofPdfName: req.files['pancardProof'] ? req.files['pancardProof'][0].filename : undefined,
@@ -63,7 +63,7 @@ export const createEntry = (req, res) => {
       const entry = new TransactionEntry(entryData);
       await entry.save();
       console.log(entry, 'entry')
-      res.status(201).json({ message: 'Entry created successfully', entryId: entry.EntryID });
+      res.status(201).json({ message: 'Entry created successfully', entryId: entry.entryId });
     } catch (error) {
       res.status(500).json({ message: 'Error creating entry', error: error.message });
     }
@@ -140,11 +140,11 @@ export const updateEntry = (req, res) => {
       }
 
       // Update the entry
-      const updatedEntry = await TransactionEntry.findOneAndUpdate({ EntryID: entryID }, updateData, { new: true });
+      const updatedEntry = await TransactionEntry.findOneAndUpdate({ entryId: entryID }, updateData, { new: true });
       if (!updatedEntry) {
         return res.status(404).json({ message: 'Entry not found' });
       }
-      res.status(200).json({ message: 'Entry updated successfully', entry: updatedEntry });
+      res.status(200).json(updatedEntry);
     } catch (error) {
       res.status(500).json({ message: 'Error updating entry', error: error.message });
     }
