@@ -55,10 +55,10 @@ export const createEntry = (req, res) => {
         toRTO: req.body.toRTO,
         services: req.body.services,
         amount: req.body.amount,
-        chasisProofPdfName: req.files['chasisProof'] ? req.files['chasisProof'][0].filename : undefined,
-        insuranceProofPdfName: req.files['insuranceProof'] ? req.files['insuranceProof'][0].filename : undefined,
-        pancardProofPdfName: req.files['pancardProof'] ? req.files['pancardProof'][0].filename : undefined,
-        addressProofPdfName: req.files['addressProof'] ? req.files['addressProof'][0].filename : undefined,
+        chasisProofPdfName: req.files['chasisProof'] ? `http://localhost:3027/uploads/${req.files['chasisProof'][0].filename}` : undefined,
+        insuranceProofPdfName: req.files['insuranceProof'] ? `http://localhost:3027/uploads/${req.files['insuranceProof'][0].filename}` : undefined,
+        pancardProofPdfName: req.files['pancardProof'] ? `http://localhost:3027/uploads/${req.files['pancardProof'][0].filename}` : undefined,
+        addressProofPdfName: req.files['addressProof'] ? `http://localhost:3027/uploads/${req.files['addressProof'][0].filename}` : undefined,
       };
       const entry = new TransactionEntry(entryData);
       await entry.save();
@@ -122,7 +122,7 @@ export const updateEntry = (req, res) => {
       // handle error
       return res.status(500).json({ message: 'File upload failed', error: err.message });
     }
-    const entryID = req.query.entryID; // Assuming entryID is passed as a URL parameter
+    const entryID = req.query.entryId; // Assuming entryID is passed as a URL parameter
     try {
       // Construct update object
       let updateData = {};
@@ -133,10 +133,10 @@ export const updateEntry = (req, res) => {
 
       // Handle file uploads if any
       if (req.files) {
-        if (req.files['chasisProof']) updateData.chasisProofPdfName = req.files['chasisProof'][0].filename;
-        if (req.files['insuranceProof']) updateData.insuranceProofPdfName = req.files['insuranceProof'][0].filename;
-        if (req.files['pancardProof']) updateData.pancardProofPdfName = req.files['pancardProof'][0].filename;
-        if (req.files['addressProof']) updateData.addressProofPdfName = req.files['addressProof'][0].filename;
+        if (req.files['chasisProof']) updateData.chasisProofPdfName = `http://localhost:3027/uploads/${req.files['chasisProof'][0].filename}`;
+        if (req.files['insuranceProof']) updateData.insuranceProofPdfName = `http://localhost:3027/uploads/${req.files['insuranceProof'][0].filename}`;
+        if (req.files['pancardProof']) updateData.pancardProofPdfName = `http://localhost:3027/uploads/${req.files['pancardProof'][0].filename}`;
+        if (req.files['addressProof']) updateData.addressProofPdfName = `http://localhost:3027/uploads/${req.files['addressProof'][0].filename}`;
       }
 
       // Update the entry
