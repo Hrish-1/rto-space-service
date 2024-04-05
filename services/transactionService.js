@@ -149,7 +149,7 @@ export const getEntry = async (req, res) => {
 
     const totalPages = Math.ceil(totalItems / size);
     const isFirst = page === 0;
-    const isLast = page === Math.min(0, totalPages - 1);
+    const isLast = page === Math.max(0, totalPages - 1);
 
     res.json({
       items,
