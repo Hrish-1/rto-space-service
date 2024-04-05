@@ -6,10 +6,10 @@ import generateEntryID from '../utils.js';
 
 
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
+  destination: function(req, file, cb) {
     cb(null, 'uploads/');
   },
-  filename: function (req, file, cb) {
+  filename: function(req, file, cb) {
     // Generate a unique alphanumeric string for the document
     const uniqueSuffix = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     cb(null, `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`);
@@ -33,6 +33,11 @@ const upload = multer({ storage: storage, fileFilter: fileFilter }).fields([
   { name: 'addressProof', maxCount: 1 }
 ]);
 
+
+function getPdfUrl(fileName) {
+  return `${process.env.BASE_URL}/uploads/${fileName}`
+}
+
 export const createEntry = (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
@@ -46,8 +51,7 @@ export const createEntry = (req, res) => {
       // Construct new entry data with generated EntryID
       const entryData = {
         entryId: entryID,
-        entryDate: req.body.entryDate,
-        status: req.body.status,
+        entryDate: Date.now(),
         vehicleNo: req.body.vehicleNo,
         customerId: req.body.customerId,
         customerName: req.body.customerName,
@@ -55,11 +59,17 @@ export const createEntry = (req, res) => {
         toRTO: req.body.toRTO,
         services: req.body.services,
         amount: req.body.amount,
-        chasisProofPdfName: req.files['chasisProof'] ? `http://localhost:3027/uploads/${req.files['chasisProof'][0].filename}` : undefined,
-        insuranceProofPdfName: req.files['insuranceProof'] ? `http://localhost:3027/uploads/${req.files['insuranceProof'][0].filename}` : undefined,
-        pancardProofPdfName: req.files['pancardProof'] ? `http://localhost:3027/uploads/${req.files['pancardProof'][0].filename}` : undefined,
-        addressProofPdfName: req.files['addressProof'] ? `http://localhost:3027/uploads/${req.files['addressProof'][0].filename}` : undefined,
+        chasisProof: req.files['chasisProof'] ? getPdfUrl(req.files['chasisProof'][0].filename) : undefined,
+        insuranceProof: req.files['insuranceProof'] ? getPdfUrl(req.files['insuranceProof'][0].filename) : undefined,
+        pancardProof: req.files['pancardProof'] ? getPdfUrl(req.files['pancardProof'][0].filename) : undefined,
+        addressProof: req.files['addressProof'] ? getPdfUrl(req.files['addressProof'][0].filename) : undefined,
       };
+
+      if (entryData.chasisProof && entryData.insuranceProof && entryData.pancardProof && entryData.addressProof) {
+        entryData['status'] = 'READY'
+      } else {
+        entryData['status'] = 'CREATED'
+      }
       const entry = new TransactionEntry(entryData);
       await entry.save();
       console.log(entry, 'entry')
@@ -76,30 +86,70 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir);
 }
 
-
+function getCriteria(fieldName, value) {
+  switch (fieldName) {
+    case 'entryDate':
+      return { [fieldName]: { $gte: new Date(value.from), $lt: new Date(value.to) } }
+    case 'customerName':
+      return { [fieldName]: { $regex: value, $options: 'i' } }
+    default:
+      return { [fieldName]: value }
+  }
+}
 
 export const getEntry = async (req, res) => {
 
-  let { page, size } = req.query;
+  let { status, keyword, from, to } = req.query;
+  const page = parseInt(req.query.page, 10) || 0
+  const size = parseInt(req.query.size, 10) || 10
 
-  page = parseInt(page, 10) || 0;
-  size = parseInt(size, 10) || 20;
+  const hasDateRangeQuery = from && to
+  const searchRequest = {
+    status: status,
+    customerName: keyword,
+    entryDate: hasDateRangeQuery ? { from: from, to: to } : null
+  }
 
   try {
-    // Count total documents
-    const totalItems = await TransactionEntry.countDocuments();
 
-    // Calculate total pages
+    const criteria = Object.keys(searchRequest)
+      .filter(x => searchRequest[x])
+      .map(x => getCriteria(x, searchRequest[x]))
+
+    const items = await TransactionEntry
+      .aggregate([
+        criteria.length ? { $match: { $and: criteria } } : null,
+        { $skip: page * size },
+        { $limit: size },
+        {
+          $addFields: {
+            amount: { $toDouble: "$amount" }
+          }
+        }
+      ].filter(x => x))
+      .exec()
+
+    const [ { totalItems } ] = await TransactionEntry
+      .aggregate([
+        criteria.length ? { $match: { $and: criteria } } : null,
+        {
+          $facet: {
+            "result": [{ $count: "count" }]
+          }
+        },
+        {
+          $project: {
+            "totalItems": {
+              $ifNull: [{ $arrayElemAt: ["$result.count", 0] }, 0]
+            }
+          }
+        }
+      ].filter(x => x))
+      .exec()
+
     const totalPages = Math.ceil(totalItems / size);
-
-    // Find documents with pagination
-    const items = await TransactionEntry.find()
-      .skip(page * size)
-      .limit(size);
-
-    // Check if current page is first or last
     const isFirst = page === 0;
-    const isLast = page === totalPages - 1;
+    const isLast = page === Math.min(0, totalPages - 1);
 
     res.json({
       items,
