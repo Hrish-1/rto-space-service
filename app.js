@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import connectDB from './config/db.js';
 import  authRoutes from './routes/auth.js';
+import fetchRoutes from './routes/fetchRoutes.js';
 import transactionRoutes from './routes/transactionRoutes.js';
 import dotenv from 'dotenv';
 
@@ -24,6 +25,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api', authRoutes); 
 app.use('/api/transaction', transactionRoutes);
+app.use('/api/fetch', fetchRoutes);
 
 const PORT = process.env.PORT || 8080 
 app.listen(PORT, () => console.log(`RTO app listening on port ${PORT}`))
