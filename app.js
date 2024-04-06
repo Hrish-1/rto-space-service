@@ -8,7 +8,6 @@ import  authRoutes from './routes/auth.js';
 import fetchRoutes from './routes/fetchRoutes.js';
 import transactionRoutes from './routes/transactionRoutes.js';
 import dotenv from 'dotenv';
-dotenv.config();
 
 dotenv.config({ path: `./.env.${process.env.NODE_ENV}` });
 
