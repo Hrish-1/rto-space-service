@@ -18,8 +18,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json()); // JSON Middleware
 
 connectDB()
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Serve static files from "uploads" directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
+app.use('/invoices', express.static(path.join(__dirname, 'invoices')));
 
 // Serve static files from "uploads" directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
