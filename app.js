@@ -8,6 +8,7 @@ import  authRoutes from './routes/auth.js';
 import fetchRoutes from './routes/fetchRoutes.js';
 import transactionRoutes from './routes/transactionRoutes.js';
 import dotenv from 'dotenv';
+import service from './models/serviceData.js';
 
 dotenv.config({ path: `./.env.${process.env.NODE_ENV}` });
 
@@ -30,6 +31,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api', authRoutes); 
 app.use('/api/transaction', transactionRoutes);
 app.use('/api/fetch', fetchRoutes);
+
+
 
 const PORT = process.env.PORT || 8080 
 app.listen(PORT, () => console.log(`RTO app listening on port ${PORT}`))

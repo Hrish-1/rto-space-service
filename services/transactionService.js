@@ -6,6 +6,7 @@ import { generateEntryID, convertToRupeesInWords } from '../utils.js';
 import InvoiceNumber from '../models/invoiceCount.js';
 import html_to_pdf from 'html-pdf-node';
 import partnerMaster from '../models/partnerMaster.js';
+import Invoice from '../models/invoice.js';
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -203,6 +204,18 @@ export const updateEntry = (req, res) => {
   });
 };
 
+export const deleteEntry = async (req, res) => {
+  const entryId = req.query.entryId;
+  try {
+    const deletedEntry = await TransactionEntry.findOneAndDelete({ entryId });
+    if (!deletedEntry) {
+      return res.status(404).json({ message: 'Entry not found' });
+    }
+    res.status(200).json({ message: 'Entry deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting entry', error: error.message });
+  }
+}
 
 export const generatepdf = async (req, res) => {
 
@@ -232,14 +245,21 @@ export const generatepdf = async (req, res) => {
 
     let records = [];
     let total = 0
+    let totalVehicles = 1
     // Using Promise.all to handle multiple asynchronous operations in parallel
     records = await Promise.all(
+
       entryIds.map(async (entryId, index) => {
-        const entry = await TransactionEntry.findOne({ entryId, customerId: Number(customerId) }).exec();
-        // If no entry found, return null (or you might want to return an empty object)
+        const entry = await TransactionEntry.findOne({ entryId, customerId: Number(customerId) })
+        totalVehicles = await TransactionEntry.countDocuments({ entryId, customerId: Number(customerId) })
+
+        console.log(totalVehicles, 'totalVehicles')
+        console.log(entry, 'entry')
         console.log(entry, 'entry')
         if (!entry) return null;
         total += parseInt(entry.amount)
+        totalVehicles = index + 1
+        console.log(totalVehicles, 'totalVehicles')
         // Map the database model to the desired output structure
         return {
           srNo: index + 1, // Correctly set srNo using the index of the array
@@ -318,10 +338,11 @@ export const generatepdf = async (req, res) => {
      }
  
      .logo {
-       width: 150px; /* Adjust as needed */
+       height: 150px;
+       width: 450px; 
        padding: 10px;
-       text-align: center;
-       margin-right: 20px; /* Adjust spacing between logo and address */
+       text-align: left;
+       margin-right: 20px;
      }
  
      .invoice-title {
@@ -334,7 +355,7 @@ export const generatepdf = async (req, res) => {
  
      .invoice-info {
        text-align: right;
-       min-width: 200px; /* Adjust as needed */
+       min-width: 200px;
        width:35%;
        margin-top: 25px;
  font-size: 0.8em;
@@ -353,7 +374,7 @@ export const generatepdf = async (req, res) => {
        margin-bottom: 20px; /* Adjust spacing between logo and address */
  
      }
-
+    
      .approval{
        display : flex;
        flex-wrap: wrap;
@@ -415,8 +436,8 @@ export const generatepdf = async (req, res) => {
  <body>
  <div class='container'>
    <div class="invoice-header">
-     <div class="">
-     <img src="http://localhost:8080/images/logo.jpg" style="width:100%; max-width:100px;">
+     <div class="logo">
+     <img src="http://localhost:8080/images/logo.jpg" style="width:150%; max-width:150px;">
      <div class="">
      <p>sai Anand Shopping Centre, Shop No. 10/11,<br>  
         Edulji Road Charai Thane,<br>
@@ -450,7 +471,7 @@ export const generatepdf = async (req, res) => {
  
    
  
-   <table>
+   <table class="table">
    <tr>
      <th>Sr. No.</th>
      <th>Vehicle No.</th>
@@ -475,8 +496,8 @@ export const generatepdf = async (req, res) => {
    <td colspan="2" class="text-right"><strong>Amount in Words</strong></td>
    <td colspan="6" class="text-right"> ${await convertToRupeesInWords(total)}</td>
  </tr>
-
  </table>
+
  <footer >
  <div class="approval">
 <p>Checked by </p>
@@ -509,18 +530,29 @@ export const generatepdf = async (req, res) => {
       bufferToPDF(pdfBuffer, outputPath);
     });
 
+
     async function bufferToPDF(pdfBuffer, pdfPath) {
       try {
         fs.writeFileSync(pdfPath, pdfBuffer);
         console.log('PDF file has been written successfully');
+        const invoiceData = {
+          InvoiceNo: invoiceNumber,
+          InvoiceDate: formattedDate,
+          CustomerID: customerId,
+          TotalVehicles: totalVehicles,
+          TotalAmount: total,
+          // ReceivedAmount: 800.00, // Partial payment received
+          // Discount: 50 // Discount given
+        };
 
-
+        const newInvoice = await Invoice.create(invoiceData);
+        console.log('Invoice created successfully:', newInvoice);
 
       } catch (err) {
         console.error('Error writing PDF to file:', err);
       }
     }
-    return res.status(200).json({ message: 'File uploaded successfully', url: `http://localhost:8080/invoices/${customerId}.pdf` });
+    return res.status(200).json({ message: 'File uploaded successfully', url: `http://localhost:8080/invoices/${customerId}_${dateTimeString}.pdf` });
   } catch (error) {
     console.log(error, 'error')
     return res.status(500).json({ message: 'File upload failed', error: error.message });
