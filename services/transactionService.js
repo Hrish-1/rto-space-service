@@ -228,8 +228,7 @@ export const generatepdf = async (req, res) => {
 
     const customerDetails = await partnerMaster.findOne({ customerId })
 
-    console.log(customerDetails, 'customerDetails')
-    // Retrieve the last invoice number and increment it
+
     let lastInvoice = await InvoiceNumber.findOne({}).sort({ invoiceNo: -1 }).exec();
     if (!lastInvoice) {
       // Handle the case for the very first invoice
@@ -251,15 +250,10 @@ export const generatepdf = async (req, res) => {
 
       entryIds.map(async (entryId, index) => {
         const entry = await TransactionEntry.findOne({ entryId, customerId: Number(customerId) })
-        totalVehicles = await TransactionEntry.countDocuments({ entryId, customerId: Number(customerId) })
 
-        console.log(totalVehicles, 'totalVehicles')
-        console.log(entry, 'entry')
-        console.log(entry, 'entry')
         if (!entry) return null;
         total += parseInt(entry.amount)
-        totalVehicles = index + 1
-        console.log(totalVehicles, 'totalVehicles')
+        
         // Map the database model to the desired output structure
         return {
           srNo: index + 1, // Correctly set srNo using the index of the array
@@ -274,9 +268,9 @@ export const generatepdf = async (req, res) => {
       })
     );
     console.log(total, 'total')
-    // Filter out null values if any entries were not found
-    records = records.filter(record => record !== null);
 
+    records = records.filter(record => record !== null);
+    totalVehicles = records.length
     // return
     // Function to generate the items rows HTML
     const generateItemsRows = (items) => {
@@ -549,7 +543,8 @@ export const generatepdf = async (req, res) => {
         console.log('Invoice created successfully:', newInvoice);
 
       } catch (err) {
-        console.error('Error writing PDF to file:', err);
+        return res.status(500).json({ message: 'Invoice creation failed', error: error.message });
+
       }
     }
     return res.status(200).json({ message: 'File uploaded successfully', url: `http://localhost:8080/invoices/${customerId}_${dateTimeString}.pdf` });
