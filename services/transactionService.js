@@ -9,10 +9,10 @@ import partnerMaster from '../models/partnerMaster.js';
 import Invoice from '../models/invoice.js';
 
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
+  destination: function(req, file, cb) {
     cb(null, 'uploads/');
   },
-  filename: function (req, file, cb) {
+  filename: function(req, file, cb) {
     // Generate a unique alphanumeric string for the document
     const uniqueSuffix = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     cb(null, `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`);
@@ -175,7 +175,7 @@ export const updateEntry = (req, res) => {
       // handle error
       return res.status(500).json({ message: 'File upload failed', error: err.message });
     }
-    const entryID = req.query.entryId; // Assuming entryID is passed as a URL parameter
+    const entryID = req.params.id; // Assuming entryID is passed as a URL parameter
     try {
       // Construct update object
       let updateData = {};
@@ -232,7 +232,7 @@ export const generatepdf = async (req, res) => {
     let lastInvoice = await InvoiceNumber.findOne({}).sort({ invoiceNo: -1 }).exec();
     if (!lastInvoice) {
       // Handle the case for the very first invoice
-      lastInvoice = await new InvoiceNumber({ invoiceNo: 1 });
+      lastInvoice = new InvoiceNumber({ invoiceNo: 1 });
     } else {
       // Increment the existing invoice number
       lastInvoice.invoiceNo++;
@@ -242,18 +242,16 @@ export const generatepdf = async (req, res) => {
 
     const invoiceNumber = lastInvoice.invoiceNo;
 
-    let records = [];
     let total = 0
-    let totalVehicles = 1
     // Using Promise.all to handle multiple asynchronous operations in parallel
-    records = await Promise.all(
+    let records = await Promise.all(
 
       entryIds.map(async (entryId, index) => {
         const entry = await TransactionEntry.findOne({ entryId, customerId: Number(customerId) })
 
         if (!entry) return null;
         total += parseInt(entry.amount)
-        
+
         // Map the database model to the desired output structure
         return {
           srNo: index + 1, // Correctly set srNo using the index of the array
@@ -266,11 +264,12 @@ export const generatepdf = async (req, res) => {
           amount: entry.amount.toString() // Convert Decimal128 to string
         };
       })
-    );
+    )
     console.log(total, 'total')
 
-    records = records.filter(record => record !== null);
-    totalVehicles = records.length
+    records = records.filter(record => record !== null)
+
+    let totalVehicles = records.length
     // return
     // Function to generate the items rows HTML
     const generateItemsRows = (items) => {
@@ -519,41 +518,44 @@ export const generatepdf = async (req, res) => {
 
     const outputPath = `./invoices/${customerId}_${dateTimeString}.pdf`;
 
-    html_to_pdf.generatePdf(file, options).then(pdfBuffer => {
-      console.log("PDF Buffer:-", pdfBuffer);
-      bufferToPDF(pdfBuffer, outputPath);
-    });
-
-
-    async function bufferToPDF(pdfBuffer, pdfPath) {
+    await new Promise((resolve, reject) => html_to_pdf.generatePdf(file, options, (_, buffer) => {
       try {
-        fs.writeFileSync(pdfPath, pdfBuffer);
-        console.log('PDF file has been written successfully');
-        const invoiceData = {
-          InvoiceNo: invoiceNumber,
-          InvoiceDate: formattedDate,
-          CustomerID: customerId,
-          TotalVehicles: totalVehicles,
-          TotalAmount: total,
-          // ReceivedAmount: 800.00, // Partial payment received
-          // Discount: 50 // Discount given
-        };
-
-        const newInvoice = await Invoice.create(invoiceData);
-        console.log('Invoice created successfully:', newInvoice);
-
+        fs.writeFileSync(outputPath, buffer);
+        resolve()
       } catch (err) {
-        return res.status(500).json({ message: 'Invoice creation failed', error: error.message });
-
+        reject()
       }
-    }
+    }))
+
+    console.log('PDF file has been written successfully');
+    const invoiceData = {
+      InvoiceNo: invoiceNumber,
+      InvoiceDate: formattedDate,
+      CustomerID: customerId,
+      TotalVehicles: totalVehicles,
+      TotalAmount: total,
+      // ReceivedAmount: 800.00, // Partial payment received
+      // Discount: 50 // Discount given
+    };
+
+    const newInvoice = await Invoice.create(invoiceData);
+    console.log('Invoice created successfully:', newInvoice);
+
     return res.status(200).json({ message: 'File uploaded successfully', url: `http://localhost:8080/invoices/${customerId}_${dateTimeString}.pdf` });
   } catch (error) {
     console.log(error, 'error')
     return res.status(500).json({ message: 'File upload failed', error: error.message });
   }
-
-
-
 }
 
+export function updateStatus(req, res) {
+  try {
+    const { ids, status } = req.body
+    const bulkOps = TransactionEntry.collection.initializeUnorderedBulkOp();
+    bulkOps.find({ 'entryId': { $in: ids } }).update({ $set: { status } });
+    bulkOps.execute();
+    return res.status(204).send()
+  } catch (err) {
+    return res.status(500).json({ error: err.message })
+  }
+}
