@@ -253,7 +253,7 @@ export const generatepdf = async (req, res) => {
 
         if (!entry) return null;
         total += parseInt(entry.amount)
-        
+
         // Map the database model to the desired output structure
         return {
           srNo: index + 1, // Correctly set srNo using the index of the array
@@ -519,7 +519,7 @@ export const generatepdf = async (req, res) => {
 
     const outputPath = `./invoices/${customerId}_${dateTimeString}.pdf`;
 
-    html_to_pdf.generatePdf(file, options).then(pdfBuffer => {
+    await html_to_pdf.generatePdf(file, options).then(pdfBuffer => {
       console.log("PDF Buffer:-", pdfBuffer);
       bufferToPDF(pdfBuffer, outputPath);
     });
