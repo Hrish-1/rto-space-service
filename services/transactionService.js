@@ -52,15 +52,16 @@ export const createEntry = (req, res) => {
       const entryID = await generateEntryID();
       console.log(entryID, 'entryID')
       // Construct new entry data with generated EntryID
+      const vehicleNo = req.body.vehicleNo ? JSON.parse(req.body.vehicleNo) : null
       const entryData = {
         entryId: entryID,
         entryDate: Date.now(),
-        vehicleNo: req.body.vehicleNo,
+        vehicleNo: vehicleNo ? vehicleNo.rto + " " + vehicleNo.number : null,
         customerId: req.body.customerId,
         customerName: req.body.customerName,
         fromRTO: req.body.fromRTO,
         toRTO: req.body.toRTO,
-        services: req.body.services,
+        services: req.body.services ? JSON.parse(req.body.services).join("/") : null,
         amount: req.body.amount,
         chasisProof: req.files['chasisProof'] ? getPdfUrl(req.files['chasisProof'][0].filename) : undefined,
         insuranceProof: req.files['insuranceProof'] ? getPdfUrl(req.files['insuranceProof'][0].filename) : undefined,
@@ -169,30 +170,40 @@ export const getEntry = async (req, res) => {
 }
 
 
+function getDeserializedValue(key, value) {
+  switch (key) {
+    case "vehicleNo":
+      const vehicleNo = value ? JSON.parse(value) : null
+      return vehicleNo ? vehicleNo.rto + " " + vehicleNo.number : null
+    case "services":
+      const services = value ? JSON.parse(value) : null
+      return services ? services.join("/") : null
+    default:
+      return value
+  }
+}
+
 export const updateEntry = (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
-      // handle error
       return res.status(500).json({ message: 'File upload failed', error: err.message });
     }
-    const entryID = req.params.id; // Assuming entryID is passed as a URL parameter
+    const entryID = req.params.id;
+
     try {
-      // Construct update object
       let updateData = {};
       Object.keys(req.body).forEach(key => {
-        updateData[key] = req.body[key];
+        updateData[key] = getDeserializedValue(key, req.body[key]) ?? null
       });
-
 
       // Handle file uploads if any
       if (req.files) {
-        if (req.files['chasisProof']) updateData.chasisProofPdfName = `http://localhost:3027/uploads/${req.files['chasisProof'][0].filename}`;
-        if (req.files['insuranceProof']) updateData.insuranceProofPdfName = `http://localhost:3027/uploads/${req.files['insuranceProof'][0].filename}`;
-        if (req.files['pancardProof']) updateData.pancardProofPdfName = `http://localhost:3027/uploads/${req.files['pancardProof'][0].filename}`;
-        if (req.files['addressProof']) updateData.addressProofPdfName = `http://localhost:3027/uploads/${req.files['addressProof'][0].filename}`;
+        if (req.files['chasisProof']) updateData.chasisProofPdf = `${process.env.BASE_URL}/uploads/${req.files['chasisProof'][0].filename}`;
+        if (req.files['insuranceProof']) updateData.insuranceProofPdf = `${process.env.BASE_URL}/uploads/${req.files['insuranceProof'][0].filename}`;
+        if (req.files['pancardProof']) updateData.pancardProofPdf = `${process.env.BASE_URL}/uploads/${req.files['pancardProof'][0].filename}`;
+        if (req.files['addressProof']) updateData.addressProofPdf = `${process.env.BASE_URL}/uploads/${req.files['addressProof'][0].filename}`;
       }
 
-      // Update the entry
       const updatedEntry = await TransactionEntry.findOneAndUpdate({ entryId: entryID }, updateData, { new: true });
       if (!updatedEntry) {
         return res.status(404).json({ message: 'Entry not found' });
@@ -529,11 +540,11 @@ export const generatepdf = async (req, res) => {
 
     console.log('PDF file has been written successfully');
     const invoiceData = {
-      InvoiceNo: invoiceNumber,
-      InvoiceDate: formattedDate,
-      CustomerID: customerId,
-      TotalVehicles: totalVehicles,
-      TotalAmount: total,
+      invoiceNo: invoiceNumber,
+      invoiceDate: formattedDate,
+      customerID: customerId,
+      totalVehicles: totalVehicles,
+      totalAmount: total,
       // ReceivedAmount: 800.00, // Partial payment received
       // Discount: 50 // Discount given
     };

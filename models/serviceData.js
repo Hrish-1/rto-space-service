@@ -7,5 +7,5 @@ const serviceSchema = new mongoose.Schema({
   amount: { type: Number, required: true },
 });
 
-const service =mongoose.model('Service', serviceSchema);
+const service = mongoose.model('Service', serviceSchema);
 export default service;
