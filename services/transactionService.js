@@ -216,7 +216,7 @@ export const updateEntry = (req, res) => {
 };
 
 export const deleteEntry = async (req, res) => {
-  const entryId = req.query.entryId;
+  const entryId = req.params.id;
   try {
     const deletedEntry = await TransactionEntry.findOneAndDelete({ entryId });
     if (!deletedEntry) {
