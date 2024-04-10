@@ -9,10 +9,10 @@ import partnerMaster from '../models/partnerMaster.js';
 import Invoice from '../models/invoice.js';
 
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
+  destination: function(req, file, cb) {
     cb(null, 'uploads/');
   },
-  filename: function (req, file, cb) {
+  filename: function(req, file, cb) {
     // Generate a unique alphanumeric string for the document
     const uniqueSuffix = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     cb(null, `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`);
@@ -52,15 +52,16 @@ export const createEntry = (req, res) => {
       const entryID = await generateEntryID();
       console.log(entryID, 'entryID')
       // Construct new entry data with generated EntryID
+      const vehicleNo = req.body.vehicleNo ? JSON.parse(req.body.vehicleNo) : null
       const entryData = {
         entryId: entryID,
         entryDate: Date.now(),
-        vehicleNo: req.body.vehicleNo,
+        vehicleNo: vehicleNo ? vehicleNo.rto + " " + vehicleNo.number : null,
         customerId: req.body.customerId,
         customerName: req.body.customerName,
         fromRTO: req.body.fromRTO,
         toRTO: req.body.toRTO,
-        services: req.body.services,
+        services: req.body.services ? JSON.parse(req.body.services).join("/") : null,
         amount: req.body.amount,
         chasisProof: req.files['chasisProof'] ? getPdfUrl(req.files['chasisProof'][0].filename) : undefined,
         insuranceProof: req.files['insuranceProof'] ? getPdfUrl(req.files['insuranceProof'][0].filename) : undefined,
@@ -169,30 +170,40 @@ export const getEntry = async (req, res) => {
 }
 
 
+function getDeserializedValue(key, value) {
+  switch (key) {
+    case "vehicleNo":
+      const vehicleNo = value ? JSON.parse(value) : null
+      return vehicleNo ? vehicleNo.rto + " " + vehicleNo.number : null
+    case "services":
+      const services = value ? JSON.parse(value) : null
+      return services ? services.join("/") : null
+    default:
+      return value
+  }
+}
+
 export const updateEntry = (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
-      // handle error
       return res.status(500).json({ message: 'File upload failed', error: err.message });
     }
-    const entryID = req.query.entryId; // Assuming entryID is passed as a URL parameter
+    const entryID = req.params.id;
+
     try {
-      // Construct update object
       let updateData = {};
       Object.keys(req.body).forEach(key => {
-        updateData[key] = req.body[key];
+        updateData[key] = getDeserializedValue(key, req.body[key]) ?? null
       });
-
 
       // Handle file uploads if any
       if (req.files) {
-        if (req.files['chasisProof']) updateData.chasisProofPdfName = `http://localhost:3027/uploads/${req.files['chasisProof'][0].filename}`;
-        if (req.files['insuranceProof']) updateData.insuranceProofPdfName = `http://localhost:3027/uploads/${req.files['insuranceProof'][0].filename}`;
-        if (req.files['pancardProof']) updateData.pancardProofPdfName = `http://localhost:3027/uploads/${req.files['pancardProof'][0].filename}`;
-        if (req.files['addressProof']) updateData.addressProofPdfName = `http://localhost:3027/uploads/${req.files['addressProof'][0].filename}`;
+        if (req.files['chasisProof']) updateData.chasisProofPdf = `${process.env.BASE_URL}/uploads/${req.files['chasisProof'][0].filename}`;
+        if (req.files['insuranceProof']) updateData.insuranceProofPdf = `${process.env.BASE_URL}/uploads/${req.files['insuranceProof'][0].filename}`;
+        if (req.files['pancardProof']) updateData.pancardProofPdf = `${process.env.BASE_URL}/uploads/${req.files['pancardProof'][0].filename}`;
+        if (req.files['addressProof']) updateData.addressProofPdf = `${process.env.BASE_URL}/uploads/${req.files['addressProof'][0].filename}`;
       }
 
-      // Update the entry
       const updatedEntry = await TransactionEntry.findOneAndUpdate({ entryId: entryID }, updateData, { new: true });
       if (!updatedEntry) {
         return res.status(404).json({ message: 'Entry not found' });
@@ -205,7 +216,7 @@ export const updateEntry = (req, res) => {
 };
 
 export const deleteEntry = async (req, res) => {
-  const entryId = req.query.entryId;
+  const entryId = req.params.id;
   try {
     const deletedEntry = await TransactionEntry.findOneAndDelete({ entryId });
     if (!deletedEntry) {
@@ -232,7 +243,7 @@ export const generatepdf = async (req, res) => {
     let lastInvoice = await InvoiceNumber.findOne({}).sort({ invoiceNo: -1 }).exec();
     if (!lastInvoice) {
       // Handle the case for the very first invoice
-      lastInvoice = await new InvoiceNumber({ invoiceNo: 1 });
+      lastInvoice = new InvoiceNumber({ invoiceNo: 1 });
     } else {
       // Increment the existing invoice number
       lastInvoice.invoiceNo++;
@@ -242,11 +253,10 @@ export const generatepdf = async (req, res) => {
 
     const invoiceNumber = lastInvoice.invoiceNo;
 
-    let records = [];
     let total = 0
-    let totalVehicles = 1
+
     // Using Promise.all to handle multiple asynchronous operations in parallel
-    records = await Promise.all(
+    let records = await Promise.all(
 
       entryIds.map(async (entryId, index) => {
         const entry = await TransactionEntry.findOne({ entryId, customerId: Number(customerId) })
@@ -266,11 +276,12 @@ export const generatepdf = async (req, res) => {
           amount: entry.amount.toString() // Convert Decimal128 to string
         };
       })
-    );
+    )
     console.log(total, 'total')
 
-    records = records.filter(record => record !== null);
-    totalVehicles = records.length
+    records = records.filter(record => record !== null)
+
+    let totalVehicles = records.length
     // return
     // Function to generate the items rows HTML
     const generateItemsRows = (items) => {
@@ -519,41 +530,44 @@ export const generatepdf = async (req, res) => {
 
     const outputPath = `./invoices/${customerId}_${dateTimeString}.pdf`;
 
-    await html_to_pdf.generatePdf(file, options).then(pdfBuffer => {
-      console.log("PDF Buffer:-", pdfBuffer);
-      bufferToPDF(pdfBuffer, outputPath);
-    });
-
-
-    async function bufferToPDF(pdfBuffer, pdfPath) {
+    await new Promise((resolve, reject) => html_to_pdf.generatePdf(file, options, (_, buffer) => {
       try {
-        fs.writeFileSync(pdfPath, pdfBuffer);
-        console.log('PDF file has been written successfully');
-        const invoiceData = {
-          InvoiceNo: invoiceNumber,
-          InvoiceDate: formattedDate,
-          CustomerID: customerId,
-          TotalVehicles: totalVehicles,
-          TotalAmount: total,
-          // ReceivedAmount: 800.00, // Partial payment received
-          // Discount: 50 // Discount given
-        };
-
-        const newInvoice = await Invoice.create(invoiceData);
-        console.log('Invoice created successfully:', newInvoice);
-
+        fs.writeFileSync(outputPath, buffer);
+        resolve()
       } catch (err) {
-        return res.status(500).json({ message: 'Invoice creation failed', error: error.message });
-
+        reject()
       }
-    }
+    }))
+
+    console.log('PDF file has been written successfully');
+    const invoiceData = {
+      invoiceNo: invoiceNumber,
+      invoiceDate: formattedDate,
+      customerID: customerId,
+      totalVehicles: totalVehicles,
+      totalAmount: total,
+      // ReceivedAmount: 800.00, // Partial payment received
+      // Discount: 50 // Discount given
+    };
+
+    const newInvoice = await Invoice.create(invoiceData);
+    console.log('Invoice created successfully:', newInvoice);
+
     return res.status(200).json({ message: 'File uploaded successfully', url: `http://localhost:8080/invoices/${customerId}_${dateTimeString}.pdf` });
   } catch (error) {
     console.log(error, 'error')
     return res.status(500).json({ message: 'File upload failed', error: error.message });
   }
-
-
-
 }
 
+export function updateStatus(req, res) {
+  try {
+    const { ids, status } = req.body
+    const bulkOps = TransactionEntry.collection.initializeUnorderedBulkOp();
+    bulkOps.find({ 'entryId': { $in: ids } }).update({ $set: { status } });
+    bulkOps.execute();
+    return res.status(204).send()
+  } catch (err) {
+    return res.status(500).json({ error: err.message })
+  }
+}
