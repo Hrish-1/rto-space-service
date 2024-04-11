@@ -1,13 +1,37 @@
 import SerialNumber from './models/serialNumber.js'; // Import the SerialNumber schema
 
-async function generateEntryID() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.toLocaleString('default', { month: 'short' }).toLowerCase();
-  const yearMonth = `${year}${month}`;
+// async function generateEntryID() {
+//   const now = new Date();
+//   const year = now.getFullYear();
+//   const month = now.toLocaleString('default', { month: 'short' }).toLowerCase();
+//   const yearMonth = `${year}${month}`;
 
 
   
+//   // Find the document for the current yearMonth or create if it doesn't exist
+//   let serialDoc = await SerialNumber.findOneAndUpdate(
+//     { yearMonth },
+//     { $inc: { serial: 1 } },
+//     { new: true, upsert: true, setDefaultsOnInsert: true }
+//   );
+
+//   // If the month has changed, reset the serial number
+//   if (!serialDoc) {
+//     serialDoc = await SerialNumber.create({ yearMonth, serial: 1 });
+//   }
+
+//   // Return the formatted EntryID
+//   const serialStr = serialDoc.serial.toString().padStart(3, '0');
+//   return `${yearMonth}-${serialStr}`;
+// }
+async function generateEntryID() {
+  const now = new Date();
+  const year = now.getFullYear();
+  // Get the month number and add 1 because JavaScript months are 0-indexed
+  const month = now.getMonth() + 1;
+  // Format year and month correctly, ensuring month is not zero-padded
+  const yearMonth = `${year}-${month}`;
+
   // Find the document for the current yearMonth or create if it doesn't exist
   let serialDoc = await SerialNumber.findOneAndUpdate(
     { yearMonth },
@@ -24,6 +48,7 @@ async function generateEntryID() {
   const serialStr = serialDoc.serial.toString().padStart(3, '0');
   return `${yearMonth}-${serialStr}`;
 }
+
 async function convertToRupeesInWords(amount) {
   const words = [
     '', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 

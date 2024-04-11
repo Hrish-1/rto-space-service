@@ -8,7 +8,6 @@ import  authRoutes from './routes/auth.js';
 import fetchRoutes from './routes/fetchRoutes.js';
 import transactionRoutes from './routes/transactionRoutes.js';
 import dotenv from 'dotenv';
-import service from './models/serviceData.js';
 
 dotenv.config({ path: `./.env.${process.env.NODE_ENV}` });
 
@@ -17,9 +16,12 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json()); // JSON Middleware
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
 connectDB()
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Serve static files from "uploads" directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
