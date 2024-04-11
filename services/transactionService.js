@@ -254,6 +254,7 @@ export const generatepdf = async (req, res) => {
     const invoiceNumber = lastInvoice.invoiceNo;
 
     let total = 0
+
     // Using Promise.all to handle multiple asynchronous operations in parallel
     let records = await Promise.all(
 
