@@ -1,14 +1,14 @@
 import express from 'express';
 const router = express.Router();
-import { createEntry, deleteEntry, generatepdf, getEntry, updateEntry, updateStatus } from '../services/transactionService.js';
+import { createTransaction, deleteTransaction, generatepdf, getTransactions, updateTransaction, updateStatus } from '../services/transactionService.js';
 import auth from '../layers/authLayer.js';
 
 // Define the route for creating a new entry
-router.post('/entry', auth, createEntry);
-router.get('/entry', auth, getEntry);
-router.patch('/entry/status', auth, updateStatus)
-router.put('/entry/:id', auth, updateEntry);
+router.post('', auth, createTransaction);
+router.patch('/status', auth, updateStatus)
+router.put('/:id', auth, updateTransaction);
 router.post('/pdf', auth, generatepdf);
-router.delete('/entry/:id', auth, deleteEntry)
+router.delete('/:id', auth, deleteTransaction)
+router.get('', auth, getTransactions)
 
 export default  router

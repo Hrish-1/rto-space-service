@@ -1,6 +1,6 @@
 [
   {
-    "entryId": "2024apr-001",
+    "entryId": "2024-4-001",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "CREATED",
     "vehicleNo": "MH01 ABC 5678",
@@ -12,7 +12,7 @@
     "amount": 700
   },
   {
-    "entryId": "2024apr-002",
+    "entryId": "2024-4-002",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "READY",
     "vehicleNo": "MH01 XYZ 2345",
@@ -24,7 +24,7 @@
     "amount": 850
   },
   {
-    "entryId": "2024apr-003",
+    "entryId": "2024-4-003",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "COMPLETED",
     "vehicleNo": "MH01 PQR 7890",
@@ -36,7 +36,7 @@
     "amount": 1000
   },
   {
-    "entryId": "2024apr-004",
+    "entryId": "2024-4-004",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "CREATED",
     "vehicleNo": "MH01 DEF 1234",
@@ -48,7 +48,7 @@
     "amount": 950
   },
   {
-    "entryId": "2024apr-005",
+    "entryId": "2024-4-005",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "CREATED",
     "vehicleNo": "MH01 GHI 6789",
@@ -60,7 +60,7 @@
     "amount": 900
   },
   {
-    "entryId": "2024apr-006",
+    "entryId": "2024-4-006",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "READY",
     "vehicleNo": "MH01 JKL 3456",
@@ -72,7 +72,7 @@
     "amount": 1100
   },
   {
-    "entryId": "2024apr-007",
+    "entryId": "2024-4-007",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "COMPLETED",
     "vehicleNo": "MH01 MNO 9012",
@@ -84,7 +84,7 @@
     "amount": 950
   },
   {
-    "entryId": "2024apr-008",
+    "entryId": "2024-4-008",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "CREATED",
     "vehicleNo": "MH01 STU 4567",
@@ -96,7 +96,7 @@
     "amount": 800
   },
   {
-    "entryId": "2024apr-009",
+    "entryId": "2024-4-009",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "READY",
     "vehicleNo": "MH01 VWX 1234",
@@ -108,7 +108,7 @@
     "amount": 1200
   },
   {
-    "entryId": "2024apr-010",
+    "entryId": "2024-4-010",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "COMPLETED",
     "vehicleNo": "MH01 YZA 7890",
@@ -120,7 +120,7 @@
     "amount": 1050
   },
   {
-    "entryId": "2024apr-011",
+    "entryId": "2024-4-011",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "CREATED",
     "vehicleNo": "MH01 BCD 2345",
@@ -132,7 +132,7 @@
     "amount": 700
   },
   {
-    "entryId": "2024apr-012",
+    "entryId": "2024-4-012",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "READY",
     "vehicleNo": "MH01 EFG 7890",
@@ -144,7 +144,7 @@
     "amount": 850
   },
   {
-    "entryId": "2024apr-013",
+    "entryId": "2024-4-013",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "COMPLETED",
     "vehicleNo": "MH01 HIJ 4567",
@@ -156,7 +156,7 @@
     "amount": 1000
   },
   {
-    "entryId": "2024apr-014",
+    "entryId": "2024-4-014",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "CREATED",
     "vehicleNo": "MH01 KLM 1234",
@@ -168,7 +168,7 @@
     "amount": 950
   },
   {
-    "entryId": "2024apr-015",
+    "entryId": "2024-4-015",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "CREATED",
     "vehicleNo": "MH01 NOP 6789",
@@ -180,7 +180,7 @@
     "amount": 900
   },
   {
-    "entryId": "2024apr-016",
+    "entryId": "2024-4-016",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "READY",
     "vehicleNo": "MH01 QRS 3456",
@@ -192,7 +192,7 @@
     "amount": 1100
   },
   {
-    "entryId": "2024apr-017",
+    "entryId": "2024-4-017",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "COMPLETED",
     "vehicleNo": "MH01 TUV 9012",
@@ -204,7 +204,7 @@
     "amount": 950
   },
   {
-    "entryId": "2024apr-018",
+    "entryId": "2024-4-018",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "CREATED",
     "vehicleNo": "MH01 WXY 5678",
@@ -216,7 +216,7 @@
     "amount": 800
   },
   {
-    "entryId": "2024apr-019",
+    "entryId": "2024-4-019",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "READY",
     "vehicleNo": "MH01 ZAB 1234",
@@ -228,7 +228,7 @@
     "amount": 1200
   },
   {
-    "entryId": "2024apr-020",
+    "entryId": "2024-4-020",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "COMPLETED",
     "vehicleNo": "MH01 CDE 7890",
@@ -240,7 +240,7 @@
     "amount": 1050
   },
   {
-    "entryId": "2024apr-021",
+    "entryId": "2024-4-021",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "CREATED",
     "vehicleNo": "MH01 DEF 2345",
@@ -252,7 +252,7 @@
     "amount": 700
   },
   {
-    "entryId": "2024apr-022",
+    "entryId": "2024-4-022",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "READY",
     "vehicleNo": "MH01 GHI 7890",
@@ -264,7 +264,7 @@
     "amount": 850
   },
   {
-    "entryId": "2024apr-023",
+    "entryId": "2024-4-023",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "COMPLETED",
     "vehicleNo": "MH01 JKL 4567",
@@ -276,7 +276,7 @@
     "amount": 1000
   },
   {
-    "entryId": "2024apr-024",
+    "entryId": "2024-4-024",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "CREATED",
     "vehicleNo": "MH01 MNO 1234",
@@ -288,7 +288,7 @@
     "amount": 950
   },
   {
-    "entryId": "2024apr-025",
+    "entryId": "2024-4-025",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "CREATED",
     "vehicleNo": "MH01 PQR 6789",
@@ -300,7 +300,7 @@
     "amount": 900
   },
   {
-    "entryId": "2024apr-026",
+    "entryId": "2024-4-026",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "READY",
     "vehicleNo": "MH01 STU 3456",
@@ -312,7 +312,7 @@
     "amount": 1100
   },
   {
-    "entryId": "2024apr-027",
+    "entryId": "2024-4-027",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "COMPLETED",
     "vehicleNo": "MH01 VWX 9012",
@@ -324,7 +324,7 @@
     "amount": 950
   },
   {
-    "entryId": "2024apr-028",
+    "entryId": "2024-4-028",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "CREATED",
     "vehicleNo": "MH01 YZA 5678",
@@ -336,7 +336,7 @@
     "amount": 800
   },
   {
-    "entryId": "2024apr-029",
+    "entryId": "2024-4-029",
     "entryDate": "2024-04-03T19:37:47.473Z",
     "status": "READY",
     "vehicleNo": "MH01 BCD 1234",
@@ -348,7 +348,7 @@
     "amount": 1200
   },
   {
-    "entryId": "2024may-001",
+    "entryId": "2024-5-001",
     "entryDate": "2024-05-01T19:37:47.473Z",
     "status": "COMPLETED",
     "vehicleNo": "MH01 EFG 7890",

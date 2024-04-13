@@ -7,7 +7,9 @@ import connectDB from './config/db.js';
 import  authRoutes from './routes/auth.js';
 import fetchRoutes from './routes/fetchRoutes.js';
 import transactionRoutes from './routes/transactionRoutes.js';
+import invoiceRoutes from './routes/invoiceRoutes.js'
 import dotenv from 'dotenv';
+import errorHandler from './layers/errorLayer.js';
 
 dotenv.config({ path: `./.env.${process.env.NODE_ENV}` });
 
@@ -29,9 +31,11 @@ app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/invoices', express.static(path.join(__dirname, 'invoices')));
 
 app.use('/api', authRoutes); 
-app.use('/api/transaction', transactionRoutes);
 app.use('/api/fetch', fetchRoutes);
+app.use('/api/invoices', invoiceRoutes);
+app.use('/api/transactions', transactionRoutes)
 
+app.use(errorHandler)
 
 
 const PORT = process.env.PORT || 8080 
