@@ -2,7 +2,6 @@ import jwt from 'jsonwebtoken';
 
 const auth = async (req, res, next) => {
     try {
-        console.log(req.headers.authorization,'req.headers.authorization')
         // Typically, the token is sent in the "Authorization" header as "Bearer {token}"
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) {

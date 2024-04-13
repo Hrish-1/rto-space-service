@@ -7,13 +7,12 @@ const invoiceSchema = new mongoose.Schema({
     unique: true
   },
   invoiceDate: {
-    type: String,
+    type: Date,
     required: true,
   },
-  customerID: {
+  customerId: {
     type: String,
-    required: true,
-    maxlength: 10
+    required: true
   },
   totalVehicles: {
     type: Number,
@@ -22,6 +21,10 @@ const invoiceSchema = new mongoose.Schema({
   totalAmount: {
     type: mongoose.Types.Decimal128,
     required: true,
+  },
+  invoicePdf: {
+    type: String,
+    required: true
   },
   receivedAmount: {
     type: mongoose.Types.Decimal128,
