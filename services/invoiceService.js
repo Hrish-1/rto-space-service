@@ -13,6 +13,8 @@ export const getInvoices = asyncHandler(async (req, res) => {
     }
     : {};
 
+  const excludeFields = new Set(["totalAmount", "discount", "receivedAmount"])
+
   const totalItems = await Invoice.countDocuments({ ...keyword });
   const items = await Invoice.aggregate([
     {
@@ -37,13 +39,15 @@ export const getInvoices = asyncHandler(async (req, res) => {
     {
       $project: {
         ...Object.keys(Invoice.schema.obj)
-          .filter(key => key !== 'totalAmount')
+          .filter(key => !excludeFields.has(key))
           .reduce((acc, path) => {
             acc[path] = 1;
             return acc;
           }, {}),
         'customerName': { $arrayElemAt: ["$customers.customerName", 0] },
-        'totalAmount': { $toDouble: '$totalAmount' }
+        'totalAmount': { $toDouble: '$totalAmount' },
+        'receivedAmount': { $toDouble: '$receivedAmount' },
+        'discount': { $toDouble: '$discount' }
       }
     }
   ]);
@@ -60,4 +64,19 @@ export const getInvoices = asyncHandler(async (req, res) => {
     totalPages,
     totalItems
   });
+})
+
+export const patchInvoice = asyncHandler(async (req, res) => {
+  const id = req.params.id
+  const invoice = Invoice.findOne({ invoiceNo: id })
+  if (!invoice) {
+    res.status(404)
+    throw new Error('Invoice not found')
+  }
+  const data = {
+    receivedAmount: req.body.receivedAmount,
+    discount: req.body.discount
+  }
+  await Invoice.findOneAndUpdate({ invoiceNo: id }, data)
+  return res.status(204).send()
 })
