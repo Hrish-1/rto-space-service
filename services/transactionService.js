@@ -483,20 +483,22 @@ export const updateStatus = asyncHandler(async (req, res) => {
 const criteriaFuncs = {
   entryDate: (value) => ({ $gte: new Date(value.from), $lt: new Date(value.to) }),
   customerName: (value) => ({ $regex: value, $options: 'i' }),
-  status: (value) => value
+  status: (value) => value,
+  toRTO: (value) => value
 }
 
 export const getTransactions = asyncHandler(async (req, res) => {
-  let { status, keyword, from, to } = req.query;
+  let { status, keyword, from, to, toRTO } = req.query;
   const page = parseInt(req.query.page, 10) || 0
   const size = parseInt(req.query.size, 10) || 10
 
   const hasDateRangeQuery = from && to
 
   const searchRequest = {
-    status: status,
+    status,
     customerName: keyword,
-    entryDate: hasDateRangeQuery ? { from: from, to: to } : null
+    entryDate: hasDateRangeQuery ? { from: from, to: to } : null,
+    toRTO
   }
 
   const searchCriteria = Object.keys(searchRequest)
