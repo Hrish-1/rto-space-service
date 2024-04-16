@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
-import Employ from '../models/employ.js'
 import ejs from "ejs";
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -86,7 +85,5 @@ const sendPasswordResetEmail = async (mailOption) => {
 
 
 export {
-  login,
-  register,
   forgotPassword
 };
