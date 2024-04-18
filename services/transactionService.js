@@ -8,6 +8,7 @@ import html_to_pdf from 'html-pdf-node';
 import partnerMaster from '../models/partnerMaster.js';
 import Invoice from '../models/invoice.js';
 import asyncHandler from '../layers/asyncHandler.js';
+import Handlebars from 'handlebars';
 
 const storage = multer.diskStorage({
   destination: function(req, file, cb) {
@@ -150,7 +151,7 @@ export const generatepdf = asyncHandler(async (req, res) => {
     throw new Error('Invalid request data')
   }
 
-  const customerDetails = await partnerMaster.findOne({ customerId })
+  const { customerName, companyName, contactNo1, contactNo2, address } = await partnerMaster.findOne({ customerId })
 
 
   let lastInvoice = await InvoiceNumber.findOne({}).sort({ invoiceNo: -1 }).exec();
@@ -166,51 +167,14 @@ export const generatepdf = asyncHandler(async (req, res) => {
 
   const invoiceNumber = lastInvoice.invoiceNo;
 
-  let total = 0
+  const records = await TransactionEntry.aggregate([
+    { $match: { entryId: { $in: entryIds }, customerId: Number(customerId) } },
+    { $addFields: { amount: { $toDouble: "$amount" } } },
+  ]).exec()
 
-  // Using Promise.all to handle multiple asynchronous operations in parallel
-  let records = await Promise.all(
+  const total = records.reduce((acc, curr) => acc + curr.amount, 0)
 
-    entryIds.map(async (entryId, index) => {
-      const entry = await TransactionEntry.findOne({ entryId, customerId: Number(customerId) })
-
-      if (!entry) return null;
-      total += parseInt(entry.amount)
-
-      // Map the database model to the desired output structure
-      return {
-        srNo: index + 1, // Correctly set srNo using the index of the array
-        vehicleNo: entry.vehicleNo,
-        service: entry.services, // Assuming services is a single string, not an array
-        reference: entry.letterNo || '',
-        fromRTO: entry.fromRTO || '',
-        toRTO: entry.toRTO || '',
-        additionalCharge: '', // Not in the model; assuming it should be an empty string
-        amount: entry.amount.toString() // Convert Decimal128 to string
-      };
-    })
-  )
-  console.log(total, 'total')
-
-  records = records.filter(record => record !== null)
-
-  let totalVehicles = records.length
-  // return
-  // Function to generate the items rows HTML
-  const generateItemsRows = (items) => {
-    return items.map(service =>
-      `<tr class="item">
-       <td>${service.srNo}</td>
-       <td>${service.vehicleNo}</td>
-       <td>${service.service}</td>
-       <td>${service.reference}</td>
-       <td>${service.fromRTO}</td>
-       <td>${service.toRTO}</td>
-       <td>${service.additionalCharge}</td>
-       <td>${service.amount}</td>
-        </tr>`
-    ).join('');
-  };
+  const totalVehicles = records.length
   const today = new Date();
 
   // Extract parts of the date
@@ -224,214 +188,24 @@ export const generatepdf = asyncHandler(async (req, res) => {
   const amountInWords = convertToRupeesInWords(total)
   console.log(amountInWords, 'amountInWords')
 
+  const templateHtml = fs.readFileSync(path.join(process.cwd(), "views", "invoice.html"), "utf8");
+  const dataBinding = {
+    items: records,
+    customerName,
+    companyName,
+    address,
+    contactNo1,
+    contactNo2,
+    amountInWords,
+    total,
+    formattedDate,
+    invoiceNumber
+  }
 
-  const htmlContent = `<!DOCTYPE html>
- <html>
- <head>
-   <meta charset="utf-8">
-   <title>Invoice Template</title>
-   <style>
-     body {
-       font-family: 'Helvetica Neue', 'Helvetica', sans-serif;
-       color: #555;
-       max-width: 800px;
-       margin: auto;
-       padding: 5px;
-       box-shadow: 0 0 10px rgba(0, 0, 0, .15);
-     }
- .container{
-   display: flex;
-   flex-wrap: nowrap;
-   width: 100%;
-   padding: 10px;
- 
- }
-     .invoice-header {
-       display: flex;
-       flex-wrap: wrap;
-       justify-content: space-between;
-       align-items: flex-start;
-       margin-top: 0;
-       width:30.3%;
-     }
- 
-     .logo {
-       height: 150px;
-       width: 450px; 
-       padding: 10px;
-       text-align: left;
-       margin-right: 20px;
-     }
- 
-     .invoice-title {
-       text-align: center;
-       font-size: 20px;
-       font-weight: bold;
-       margin-top: 4px;
-        width:30.3%;
-     }
- 
-     .invoice-info {
-       text-align: right;
-       min-width: 200px;
-       width:35%;
-       margin-top: 25px;
- font-size: 0.8em;
-     }
- 
-     .company-address {
-       text-align: left;
-       padding-left: 10px;
-       margin-top: 0;
- 
-     }
- 
-     .invoice-header > div,
-     .company-address {
-       font-size: 0.8em;
-       margin-bottom: 20px; /* Adjust spacing between logo and address */
- 
-     }
-    
-     .approval{
-       display : flex;
-       flex-wrap: wrap;
-       justify-content: space-between;
-       align-items: flex-start;
-       margin-top: 20px
-       margin-left: 10px;
-       padding: 10px;
-       width:70%;
-     }
-     .greeting{
-      display : flex;
-      justify-content: center;
-      font-size: 1.5em;
-      margin-top: 26px
-      width:100%;
-     }
+  Handlebars.registerHelper("inc", (value, _) => parseInt(value) + 1);
+  const template = Handlebars.compile(templateHtml)
+  const htmlContent = template(dataBinding)
 
-
- 
-     /* Additional styles for responsiveness if necessary */
-     @media only screen and (max-width: 600px) {
-       .invoice-header {
-         flex-direction: column;
-         align-items: center;
-       }
- 
-       .logo,
-       .invoice-info {
-         width: 100%;
-         text-align: center;
-         margin: 10px 0;
-       }
- 
-       .invoice-title {
-         order: -1; /* Put INVOICE at the top */
-       }
-     }
- 
-     table {
-       width: 100%;
-       border-collapse: collapse;
-     }
- 
-     table, th, td {
-       border: 1px solid black;
-     }
- 
-     th, td {
-       padding: 8px;
-       text-align: left;
-     }
- 
-     th {
-       background-color: #f2f2f2;
-     }
-   </style>
- </head>
- <body>
- <div class='container'>
-   <div class="invoice-header">
-     <div class="logo">
-     <img src="http://localhost:8080/images/logo.jpg" style="width:150%; max-width:150px;">
-     <div class="">
-     <p>sai Anand Shopping Centre, Shop No. 10/11,<br>  
-        Edulji Road Charai Thane,<br>
-        Phone: 9833567595 / 7977021535<br>
-        Email: gaikwadgajanan64@gmail.com</p>
-   </div>
-     </div>
-     </div>
- 
-     <div class="invoice-title">
-       INVOICE
-     </div>
-     <div class="invoice-info">
-     <p>
-  <strong>Invoice No:</strong> ${invoiceNumber}<br>
-  <br>
-  <strong>Date:</strong> ${formattedDate}<br>
-  <br>
-  <strong>For:</strong> Project or Sales<br>
-  <br>
-  <strong>Bill To:</strong> ${customerDetails.customerName}<br>
-  <br>
-  <strong>Company Name:</strong> ${customerDetails.companyName}<br>
-  <br>
-  <strong>Address:</strong> ${customerDetails.address}<br>
-  <br>
-  <strong>Bill To Phone:</strong> ${customerDetails.contactNo1}/${customerDetails.contactNo2}
-</p>
-     </div>
-   </div>
- 
-   
- 
-   <table class="table">
-   <tr>
-     <th>Sr. No.</th>
-     <th>Vehicle No.</th>
-     <th>Service</th>
-     <th>Reference</th>
-     <th>From RTO</th>
-     <th>To RTO</th>
-     <th>Additional Charge</th>
-     <th>Amount</th>
-   </tr>
-   <tr>
-   ${generateItemsRows(records)}
-   <tr>
-   <td colspan="7" class="text-right"><strong>Discount</strong></td>
-   <td class="text-right"></td>
- </tr>
- <tr>
-   <td colspan="7" class="text-right"><strong>Total</strong></td>
-   <td class="text-right">${total}</td>
- </tr>
- <tr>
-   <td colspan="2" class="text-right"><strong>Amount in Words</strong></td>
-   <td colspan="6" class="text-right"> ${await convertToRupeesInWords(total)}</td>
- </tr>
- </table>
-
- <footer >
- <div class="approval">
-<p>Checked by </p>
-
-<p>Recieved by </p>
-</div>
-<div>
-<p class="greeting">Thank you for your business</p>
-</div>
-</footer>
-
-
- </body>
- </html>
- 
- `
   let options = { format: 'A4' };
   let file = { content: htmlContent };
 
@@ -466,10 +240,12 @@ export const generatepdf = asyncHandler(async (req, res) => {
     // Discount: 50 // Discount given
   };
 
+  await TransactionEntry.updateMany({ entryId: { $in: entryIds }}, { invoiceNo: invoiceNumber })
+
   const newInvoice = await Invoice.create(invoiceData);
   console.log('Invoice created successfully:', newInvoice);
 
-  return res.status(200).json({ message: 'File uploaded successfully', url: invoicePdfUrl });
+  return res.status(200).json({ url: invoicePdfUrl });
 })
 
 export const updateStatus = asyncHandler(async (req, res) => {

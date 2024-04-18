@@ -49,7 +49,7 @@ async function generateEntryID() {
   return `${yearMonth}-${serialStr}`;
 }
 
-async function convertToRupeesInWords(amount) {
+function convertToRupeesInWords(amount) {
   const words = [
     '', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 
     'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'
