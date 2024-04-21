@@ -8,7 +8,7 @@ export const authEmployee = asyncHandler(async (req, res) => {
   const employee = await Employee.findOne({ email });
 
   if (employee && (await employee.matchPassword(password))) {
-    const token = generateToken(employee._id);
+    const token = generateToken({ userId: employee._id, level: employee.level });
     return res.status(200).json({ userToken: token })
   } else {
     res.status(401);

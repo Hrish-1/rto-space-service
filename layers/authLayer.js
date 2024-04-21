@@ -16,8 +16,6 @@ const auth = asyncHandler(async (req, res, next) => {
 
             req.user = await Employee.findById(decoded.userId).select('-password')
 
-            console.log("auth layer", req.user)
-
             next()
         } catch (error) {
             console.error(error)
