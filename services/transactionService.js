@@ -380,6 +380,8 @@ export const generateDeliveryPdf = asyncHandler(async (req, res) => {
 
 
     const deliveryDocuments = await createDeliveryDocuments(records, deliveryData);
+  await TransactionEntry.updateMany({ entryId: { $in: entryIds } }, { deliveryNo: deliveryNumber })
+
     console.log('Created Delivery Documents:', deliveryDocuments);
    
  
