@@ -32,6 +32,7 @@ connectDB()
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/invoices', express.static(path.join(__dirname, 'invoices')));
+app.use('/deliveries', express.static(path.join(__dirname, 'deliveries')));
 
 app.use('/api', authRoutes);
 app.use('/api/fetch', fetchRoutes);

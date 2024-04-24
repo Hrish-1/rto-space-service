@@ -85,8 +85,8 @@
             display: flex;
             justify-content: center;
             font-size: 1.5em;
-            margin-top: 26px ;
-            width:100%;
+            margin-top: 26px;
+            width: 100%;
         }
 
 
@@ -113,6 +113,7 @@
 
         table {
             width: 100%;
+            margin-top: 70px;
             border-collapse: collapse;
         }
 
@@ -149,23 +150,20 @@
         </div>
 
         <div class="invoice-title">
-            INVOICE
+            Delivery Report
         </div>
         <div class="invoice-info">
             <p>
-                <strong>Invoice No:</strong> {{ invoiceNumber }}<br>
-                <br>
-                <strong>Date:</strong> {{ formattedDate }}<br>
-                <br>
-                <strong>For:</strong> Project or Sales<br>
-                <br>
-                <strong>Bill To:</strong> {{ customerName }}<br>
-                <br>
-                <strong>Company Name:</strong> {{ companyName }}<br>
-                <br>
-                <strong>Address:</strong> {{ address }}<br>
-                <br>
-                <strong>Bill To Phone:</strong> {{ contactNo1 }} / {{ contactNo2 }}
+                <strong>Date:</strong> {{ formattedDate }}
+            </p>
+            <br />
+            <p> 
+                <strong>To RTO:</strong> {{ toRto }} 
+            </p>
+            <br />
+            <p> 
+                <strong>Delivery Boy:</strong> {{ deliveryBoyName }}
+
             </p>
         </div>
     </div>
@@ -177,44 +175,21 @@
             <th>Sr. No.</th>
             <th>Vehicle No.</th>
             <th>Service</th>
-            <th>Reference</th>
-            <th>From RTO</th>
             <th>To RTO</th>
-            <th>Additional Charge</th>
-            <th>Amount</th>
+
         </tr>
         {{#each items}}
         <tr class="item">
             <td>{{ inc @index }}</td>
             <td>{{ vehicleNo }}</td>
-            <td>{{ service }}</td>
-            <td>{{ reference }}</td>
-            <td>{{ fromRTO }}</td>
+            <td>{{ services }}</td>
             <td>{{ toRTO }}</td>
-            <td>{{ additionalCharge }}</td>
-            <td>{{ amount }}</td>
         </tr>
         {{/each}}
-        <tr>
-            <td colspan="7" class="text-right"><strong>Discount</strong></td>
-            <td class="text-right"></td>
-        </tr>
-        <tr>
-            <td colspan="7" class="text-right"><strong>Total</strong></td>
-            <td class="text-right">{{ total }}</td>
-        </tr>
-        <tr>
-            <td colspan="2" class="text-right"><strong>Amount in Words</strong></td>
-            <td colspan="6" class="text-right"> {{ amountInWords }}</td>
-        </tr>
     </table>
 
     <footer>
-        <div class="approval">
-            <p>Checked by </p>
 
-            <p>Recieved by </p>
-        </div>
         <div>
             <p class="greeting">Thank you for your business</p>
         </div>
