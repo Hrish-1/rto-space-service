@@ -12,6 +12,7 @@ import employeeRoutes from './routes/employeeRoutes.js'
 import dotenv from 'dotenv';
 import errorHandler from './layers/errorLayer.js';
 
+
 dotenv.config({ path: `./.env.${process.env.NODE_ENV}` });
 
 const app = express()
@@ -32,6 +33,7 @@ connectDB()
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/invoices', express.static(path.join(__dirname, 'invoices')));
+app.use('/deliveries', express.static(path.join(__dirname, 'deliveries')));
 
 app.use('/api', authRoutes);
 app.use('/api/fetch', fetchRoutes);
@@ -40,6 +42,8 @@ app.use('/api/transactions', transactionRoutes)
 app.use('/api/employees', employeeRoutes)
 
 app.use(errorHandler)
+
+
 
 
 const PORT = process.env.PORT || 8080
