@@ -12,6 +12,7 @@ import employeeRoutes from './routes/employeeRoutes.js'
 import dotenv from 'dotenv';
 import errorHandler from './layers/errorLayer.js';
 
+
 dotenv.config({ path: `./.env.${process.env.NODE_ENV}` });
 
 const app = express()
@@ -41,6 +42,8 @@ app.use('/api/transactions', transactionRoutes)
 app.use('/api/employees', employeeRoutes)
 
 app.use(errorHandler)
+
+
 
 
 const PORT = process.env.PORT || 8080

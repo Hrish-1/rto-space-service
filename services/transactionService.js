@@ -5,6 +5,7 @@ import fs from 'fs';
 import { generateEntryID, convertToRupeesInWords } from '../utils.js';
 import InvoiceNumber from '../models/invoiceCount.js';
 import DeliveryNumber from '../models/deliveryCount.js';
+import puppeteer from 'puppeteer';
 
 import html_to_pdf from 'html-pdf-node';
 import partnerMaster from '../models/partnerMaster.js';
@@ -288,9 +289,55 @@ async function createDeliveryDocuments(records, deliveryData) {
     throw error;
   }
 }
+const generatePdfFromHtml = async (htmlFileNames, entryIds,toRto,dateTimeString) => {
+  const pdfPaths = [];
+
+  // Launch a headless browser instance
+  const browser = await puppeteer.launch();
+
+  try {
+    for (let i = 0; i < htmlFileNames.length; i++) {
+      const htmlFileName = htmlFileNames[i];
+      const templateHtmlPath = path.join(process.cwd(), "views", htmlFileName);
+      const templateHtml = await fs.promises.readFile(templateHtmlPath, "utf8");
+
+      // Create a new page in the headless browser
+      const page = await browser.newPage();
+
+      // Set the HTML content of the page
+      await page.setContent(templateHtml);
+
+      // Generate the PDF from the page content
+      const pdfPath = `./deliveries/${htmlFileName.split(".")[0]}_document_${i + 1}.pdf`;
+      const pdfName = `${process.env.BASE_URL}${pdfPath.split(".")[1]}.pdf`;
+
+      await page.pdf({ path: pdfPath, format: 'A4', printBackground: true });
+
+      const ans = await TransactionEntry.updateMany(
+        { entryId: { $in: entryIds }, toRTO: toRto },
+        { $set: { form30Part1: pdfName, form30part2: pdfName, form29: pdfName } }
+      );
+      console.log(ans, 'ans')
 
 
+      // Close the page
+      await page.close();
 
+      pdfPaths.push(pdfPath);
+      console.log(`Generated PDF: ${pdfPath}`);
+    }
+  } catch (error) {
+    console.error('Error generating PDFs:', error);
+    // Handle error appropriately
+  } finally {
+    // Close the browser instance
+    await browser.close();
+  }
+
+  return pdfPaths;
+};
+
+// active
 export const generateDeliveryPdf = asyncHandler(async (req, res) => {
 
   const toRto = req.body.toRto
@@ -320,7 +367,6 @@ export const generateDeliveryPdf = asyncHandler(async (req, res) => {
   ]).exec()
 
 
-  services = records.services
 
   const today = new Date();
 
@@ -336,7 +382,6 @@ export const generateDeliveryPdf = asyncHandler(async (req, res) => {
   const templateHtml = fs.readFileSync(path.join(process.cwd(), "views", "deliveries.html"), "utf8");
   const dataBinding = {
     items: records,
-    services,
     toRto,
     formattedDate,
     deliveryNumber,
@@ -379,14 +424,38 @@ export const generateDeliveryPdf = asyncHandler(async (req, res) => {
   };
 
 
-    const deliveryDocuments = await createDeliveryDocuments(records, deliveryData);
-  await TransactionEntry.updateMany({ entryId: { $in: entryIds } }, { deliveryNo: deliveryNumber })
+  const deliveryDocuments = await createDeliveryDocuments(records, deliveryData);
+  console.log(deliveryDocuments, 'deliveryDocuments')
+  // await TransactionEntry.updateMany({ entryId: { $in: entryIds } }, { deliveryNo: deliveryNumber })
+  await TransactionEntry.updateMany(
+    { entryId: { $in: entryIds }, toRTO: toRto },
+    { $set: { deliveryNo: deliveryNumber } }
+  );
 
-    console.log('Created Delivery Documents:', deliveryDocuments);
-   
- 
+  const htmlFileNames = ['form30Part1.html', 'form30Part2.html', 'form29.html'];
+
+  generatePdfFromHtml(htmlFileNames, entryIds,toRto,dateTimeString)
+    .then((pdfPaths) => {
+      console.log('PDFs generated:', pdfPaths);
+      // Send generated PDF paths as a response or process them as needed
+    })
+    .catch((error) => {
+      console.error('Error generating PDFs:', error);
+      // Send error response or handle error appropriately
+      res.status(500).json({ error: 'Failed to generate PDFs' });
+    });
+
   return res.status(200).json({ url: deliveryPdfUrl });
 })
+
+
+
+
+
+
+
+
+
 
 
 
