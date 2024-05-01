@@ -11,7 +11,7 @@ const invoiceSchema = new mongoose.Schema({
     required: true,
   },
   customerId: {
-    type: String,
+    type: Number,
     required: true
   },
   totalVehicles: {

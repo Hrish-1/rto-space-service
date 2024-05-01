@@ -6,10 +6,10 @@ const deliverySchema = new mongoose.Schema({
     deliveryDate: Date,
     deliveryBy: String,
     services: String,
-    vehicleNo:{ type: String, required: true },
+    vehicleNo: { type: String, required: true },
     toRto: { type: String, required: true },
-    deliveryPdfUrl:{ type: String, required: true }
-  
+    deliveryPdfUrl: { type: String, required: true }
+
 });
 
 const Delivery = mongoose.model('Delivery', deliverySchema);

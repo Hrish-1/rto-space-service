@@ -9,8 +9,10 @@ import fetchRoutes from './routes/fetchRoutes.js';
 import transactionRoutes from './routes/transactionRoutes.js';
 import invoiceRoutes from './routes/invoiceRoutes.js'
 import employeeRoutes from './routes/employeeRoutes.js'
+import deliveryRoutes from './routes/deliveryRoutes.js'
 import dotenv from 'dotenv';
 import errorHandler from './layers/errorLayer.js';
+import Handlebars from 'handlebars';
 
 
 dotenv.config({ path: `./.env.${process.env.NODE_ENV}` });
@@ -27,6 +29,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+Handlebars.registerHelper("inc", (value, _) => parseInt(value) + 1);
+
 connectDB()
 
 // Serve static files from "uploads" directory
@@ -40,6 +44,7 @@ app.use('/api/fetch', fetchRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/transactions', transactionRoutes)
 app.use('/api/employees', employeeRoutes)
+app.use('/api/deliveries', deliveryRoutes)
 
 app.use(errorHandler)
 
