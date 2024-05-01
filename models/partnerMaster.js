@@ -2,7 +2,7 @@ import mongoose from 'mongoose'
 const { Schema } = mongoose;
 
 const partnerMasterSchema = new Schema({
-    customerId: String,
+    customerId: { type: Number, required: true },
     customerName: String,
     companyName: String,
     address: String,

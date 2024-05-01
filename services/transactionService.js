@@ -42,7 +42,6 @@ const upload = multer({ storage: storage, fileFilter: fileFilter }).fields([
   { name: 'addressProof', maxCount: 1 }
 ]);
 
-
 function getPdfUrl(fileName) {
   return `${process.env.BASE_URL}/uploads/${fileName}`
 }
@@ -206,7 +205,6 @@ export const generatepdf = asyncHandler(async (req, res) => {
     invoiceNumber
   }
 
-  Handlebars.registerHelper("inc", (value, _) => parseInt(value) + 1);
   const template = Handlebars.compile(templateHtml)
   const htmlContent = template(dataBinding)
 
@@ -337,12 +335,10 @@ const generatePdfFromHtml = async (htmlFileNames, entryIds,toRto,dateTimeString)
   return pdfPaths;
 };
 
-// active
 export const generateDeliveryPdf = asyncHandler(async (req, res) => {
 
-  const toRto = req.body.toRto
-  const deliveryBoyName = req.body.deliveryBoyName
-  let services;
+  const toRto = req.body.toRTO
+  const deliveryBy = req.body.deliveryBy
   const entryIds = req.body.transactionIds
   if (!toRto || !entryIds || !Array.isArray(entryIds)) {
     res.status(400)
@@ -385,10 +381,9 @@ export const generateDeliveryPdf = asyncHandler(async (req, res) => {
     toRto,
     formattedDate,
     deliveryNumber,
-    deliveryBoyName
+    deliveryBy
   }
 
-  Handlebars.registerHelper("inc", (value, _) => parseInt(value) + 1);
   const template = Handlebars.compile(templateHtml)
   const htmlContent = template(dataBinding)
 
@@ -418,7 +413,7 @@ export const generateDeliveryPdf = asyncHandler(async (req, res) => {
   const deliveryData = {
     deliveryNo: deliveryNumber,
     deliveryDate: formattedDate,
-    deliveryBy: deliveryBoyName,
+    deliveryBy,
     toRto,
     deliveryPdfUrl
   };
@@ -447,19 +442,6 @@ export const generateDeliveryPdf = asyncHandler(async (req, res) => {
 
   return res.status(200).json({ url: deliveryPdfUrl });
 })
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 export const updateStatus = asyncHandler(async (req, res) => {
   const { ids, status } = req.body
