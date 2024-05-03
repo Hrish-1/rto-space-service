@@ -4,7 +4,6 @@ import cors from 'cors'; // from cors
 import path from 'path';
 import { fileURLToPath } from 'url';
 import connectDB from './config/db.js';
-import authRoutes from './routes/auth.js';
 import fetchRoutes from './routes/fetchRoutes.js';
 import transactionRoutes from './routes/transactionRoutes.js';
 import invoiceRoutes from './routes/invoiceRoutes.js'
@@ -26,9 +25,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json()); // JSON Middleware
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
 Handlebars.registerHelper("inc", (value, _) => parseInt(value) + 1);
 
 connectDB()
@@ -39,7 +35,6 @@ app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/invoices', express.static(path.join(__dirname, 'invoices')));
 app.use('/deliveries', express.static(path.join(__dirname, 'deliveries')));
 
-app.use('/api', authRoutes);
 app.use('/api/fetch', fetchRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/transactions', transactionRoutes)
@@ -47,9 +42,6 @@ app.use('/api/employees', employeeRoutes)
 app.use('/api/deliveries', deliveryRoutes)
 
 app.use(errorHandler)
-
-
-
 
 const PORT = process.env.PORT || 8080
 app.listen(PORT, () => console.log(`RTO app listening on port ${PORT}`))

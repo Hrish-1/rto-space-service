@@ -41,6 +41,16 @@ employeeSchema.pre('save', async function(next) {
   this.password = await bcrypt.hash(this.password, salt);
 });
 
+employeeSchema.pre(["updateOne", "findByIdAndUpdate", "findOneAndUpdate"], async function(next) {
+  const data = this.getUpdate();
+  if (data.password) {
+    const salt = await bcrypt.genSalt(10);
+    data.password = await bcrypt.hash(data.password, salt);
+  }
+  next()
+
+});
+
 const Employee = mongoose.model('Employee', employeeSchema);
 
 export default Employee;
