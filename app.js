@@ -34,6 +34,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/invoices', express.static(path.join(__dirname, 'invoices')));
 app.use('/deliveries', express.static(path.join(__dirname, 'deliveries')));
+app.use('/forms', express.static(path.join(__dirname, 'forms')));
 
 app.use('/api/fetch', fetchRoutes);
 app.use('/api/invoices', invoiceRoutes);

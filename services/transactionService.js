@@ -5,7 +5,6 @@ import fs from 'fs';
 import { generateEntryID, convertToRupeesInWords } from '../utils.js';
 import InvoiceNumber from '../models/invoiceCount.js';
 import DeliveryNumber from '../models/deliveryCount.js';
-import puppeteer from 'puppeteer';
 
 import html_to_pdf from 'html-pdf-node';
 import partnerMaster from '../models/partnerMaster.js';
@@ -15,10 +14,10 @@ import Handlebars from 'handlebars';
 import Delivery from '../models/delivery.js';
 
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
+  destination: function(req, file, cb) {
     cb(null, 'uploads/');
   },
-  filename: function (req, file, cb) {
+  filename: function(req, file, cb) {
     // Generate a unique alphanumeric string for the document
     const uniqueSuffix = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     cb(null, `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`);
@@ -73,7 +72,12 @@ export const createTransaction = asyncHandler(async (req, res) => {
     fromRTO: req.body.fromRTO,
     toRTO: req.body.toRTO,
     services: req.body.services ? JSON.parse(req.body.services).join("/") : null,
-    amount: req.body.amount
+    amount: req.body.amount,
+    sellerName: req.body.sellerName,
+    sellerAddress: req.body.sellerAddress,
+    purchaserName: req.body.purchaserName,
+    purchaserAddress: req.body.purchaserAddress,
+    chasisNo: req.body.chasisNo
   };
 
   if (entryData.chasisProof && entryData.insuranceProof && entryData.pancardProof && entryData.addressProof) {
@@ -82,10 +86,54 @@ export const createTransaction = asyncHandler(async (req, res) => {
     entryData['status'] = 'CREATED'
   }
 
+  if (req.body.generateForms) {
+    const { form30part1, form30part2, form29 } = await generateForms(entryData);
+    entryData['form30part1'] = form30part1
+    entryData['form30part2'] = form30part2
+    entryData['form29'] = form29
+  }
+
   const entry = new TransactionEntry(entryData);
   await entry.save();
   res.status(201).json({ entryId: entry.entryId });
 });
+
+
+async function generateForms(entryData) {
+  const form30p1templateHtml = fs.readFileSync(path.join(process.cwd(), "views", "form30-1.html"), "utf8");
+  const form30p2templateHtml = fs.readFileSync(path.join(process.cwd(), "views", "form30-2.html"), "utf8");
+  const form29templateHtml = fs.readFileSync(path.join(process.cwd(), "views", "form29.html"), "utf8");
+
+  const dataBinding = {
+    sellerName: entryData.sellerName,
+    sellerAddress: entryData.sellerAddress,
+    purchaserName: entryData.purchaserName,
+    purchaserAddress: entryData.purchaserAddress,
+    vehicleNo: entryData.vehicleNo,
+    chasisNo: entryData.chasisNo
+  }
+
+  const form30p1outputPath = `./forms/form30-1-${entryData.entryId}.pdf`;
+  const form30p2outputPath = `./forms/form30-2-${entryData.entryId}.pdf`;
+  const form29outputPath = `./forms/form29-${entryData.entryId}.pdf`;
+
+  const files = [
+    { content: Handlebars.compile(form30p1templateHtml)(dataBinding), path: form30p1outputPath },
+    { content: Handlebars.compile(form30p2templateHtml)(dataBinding), path: form30p2outputPath },
+    { content: Handlebars.compile(form29templateHtml)(dataBinding), path: form29outputPath }
+  ]
+  let options = { format: 'A4' };
+  const results = await html_to_pdf.generatePdfs(files, options);
+
+  for (const result of results) {
+    fs.writeFileSync(result.path, result.buffer);
+  }
+  return {
+    form30part1: `${process.env.BASE_URL}` + form30p1outputPath.slice(1),
+    form30part2: `${process.env.BASE_URL}` + form30p2outputPath.slice(1),
+    form29: `${process.env.BASE_URL}` + form29outputPath.slice(1),
+  }
+}
 
 // Ensure the uploads directory exists
 const uploadsDir = './uploads';
@@ -131,6 +179,17 @@ export const updateTransaction = asyncHandler(async (req, res) => {
   Object.keys(req.body).filter(key => key !== '_id').forEach(key => {
     updateData[key] = getDeserializedValue(key, req.body[key]) ?? null
   });
+
+  if (updateData.chasisProof && updateData.insuranceProof && updateData.pancardProof && updateData.addressProof) {
+    updateData['status'] = 'READY'
+  }
+
+  if (req.body.generateForms) {
+    const { form30part1, form30part2, form29 } = await generateForms(updateData);
+    updateData['form30part1'] = form30part1
+    updateData['form30part2'] = form30part2
+    updateData['form29'] = form29
+  }
 
   await TransactionEntry.findOneAndUpdate({ entryId }, { ...updateData, ...files });
   res.status(204).send();
@@ -287,53 +346,6 @@ async function createDeliveryDocuments(records, deliveryData) {
     throw error;
   }
 }
-const generatePdfFromHtml = async (htmlFileNames, entryIds,toRto,dateTimeString) => {
-  const pdfPaths = [];
-
-  // Launch a headless browser instance
-  const browser = await puppeteer.launch();
-
-  try {
-    for (let i = 0; i < htmlFileNames.length; i++) {
-      const htmlFileName = htmlFileNames[i];
-      const templateHtmlPath = path.join(process.cwd(), "views", htmlFileName);
-      const templateHtml = await fs.promises.readFile(templateHtmlPath, "utf8");
-
-      // Create a new page in the headless browser
-      const page = await browser.newPage();
-
-      // Set the HTML content of the page
-      await page.setContent(templateHtml);
-
-      // Generate the PDF from the page content
-      const pdfPath = `./deliveries/${htmlFileName.split(".")[0]}_document_${i + 1}.pdf`;
-      const pdfName = `${process.env.BASE_URL}${pdfPath.split(".")[1]}.pdf`;
-
-      await page.pdf({ path: pdfPath, format: 'A4', printBackground: true });
-
-      const ans = await TransactionEntry.updateMany(
-        { entryId: { $in: entryIds }, toRTO: toRto },
-        { $set: { form30Part1: pdfName, form30part2: pdfName, form29: pdfName } }
-      );
-      console.log(ans, 'ans')
-
-
-      // Close the page
-      await page.close();
-
-      pdfPaths.push(pdfPath);
-      console.log(`Generated PDF: ${pdfPath}`);
-    }
-  } catch (error) {
-    console.error('Error generating PDFs:', error);
-    // Handle error appropriately
-  } finally {
-    // Close the browser instance
-    await browser.close();
-  }
-
-  return pdfPaths;
-};
 
 export const generateDeliveryPdf = asyncHandler(async (req, res) => {
 
@@ -418,27 +430,12 @@ export const generateDeliveryPdf = asyncHandler(async (req, res) => {
     deliveryPdfUrl
   };
 
-
   const deliveryDocuments = await createDeliveryDocuments(records, deliveryData);
   console.log(deliveryDocuments, 'deliveryDocuments')
-  // await TransactionEntry.updateMany({ entryId: { $in: entryIds } }, { deliveryNo: deliveryNumber })
   await TransactionEntry.updateMany(
     { entryId: { $in: entryIds }, toRTO: toRto },
     { $set: { deliveryNo: deliveryNumber } }
   );
-
-  const htmlFileNames = ['form30Part1.html', 'form30Part2.html', 'form29.html'];
-
-  generatePdfFromHtml(htmlFileNames, entryIds,toRto,dateTimeString)
-    .then((pdfPaths) => {
-      console.log('PDFs generated:', pdfPaths);
-      // Send generated PDF paths as a response or process them as needed
-    })
-    .catch((error) => {
-      console.error('Error generating PDFs:', error);
-      // Send error response or handle error appropriately
-      res.status(500).json({ error: 'Failed to generate PDFs' });
-    });
 
   return res.status(200).json({ url: deliveryPdfUrl });
 })

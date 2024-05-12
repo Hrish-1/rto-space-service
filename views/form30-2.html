@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Replica</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .form-container {
+            width: 100%;
+            max-width: 600px;
+            margin: auto;
+        }
+        .form-header {
+                     text-align: center;
+                     font-weight: bold;
+                     margin-bottom: 20px;
+                 }
+        .underline {
+            border-bottom: 1px solid black;
+            display: inline-block;
+            width: 150px; /* Adjust as needed */
+            margin-left: 10px;
+        }
+        .longunderline {
+            border-bottom: 1px solid black;
+            display: inline-block;
+            width: 250px; /* Adjust as needed */
+            margin-left: 10px;
+        }  
+        .underlined-text {
+            text-decoration: underline;
+          }
+        .form-item {
+            margin: 10px 0;
+        }
+        .footer {
+            display: flex;
+            justify-content: space-between;
+        }
+        .flex {
+            display: flex;
+            justify-content: space-between;
+        }
+        .middle {
+    margin-left: 100px;
+    width: 400px;
+      
+        }
+    </style>
+    </head>
+    <body>
+    
+    <div class="form-container">
+        <form>
+        <div class="form-header">
+                <p>Part 2- For Use of the Transferee</p>
+               
+            </div>
+<p>To, </p>
+<br/>
+<p>The Registering Authority</p>
+<br/>
+<span class="longunderline"></span> 
+<p>Name of the transferee : <span class="underline">{{ purchaserName }}</span>     </p>
+        <p>Son/wife/daughter of : <span class="underline"></span>     </p>
+        <p>Full Address : <span class="longunderline">{{ purchaserAddress }}</span>  </p>
+<p>(proof of address to be enclosed)</p>
+            <p>I hereby declare that I/we have on this Day
+            <span class="underline"></span> day of
+            <span class="underline"></span> of the year
+            <span class="longunderline"></span>
+            purchase the Motor Vehicle bearing registration number
+            <span class="underline">{{ vehicleNo }}</span> from
+            <span class="longunderline"></span>.
+        
+         (name and full address)and request that necessary entries regarding the transfer of ownership of the vehicle in my/our name may be recorded in certificate of registration /certificate of fitness of the vehicle. which is enclosed <br>
+            <br/>
+            The certificate of insurance is also enclosed
+
+            </p>
+      <strong>Consent of the Financer in the case of Motor Vehicle Subject to an argument of hire purcchase/lease/hypothecation</strong>
+       
+      <p> I/We being a party to an agreement of hire purchase /lease /hypothecation in respect of motor Vehicle 
+      <span class="longunderline">{{ vehicleNo }}</span> give consent to the transferer of ownership of the said vehicle to Shri/smt/kumari <span class="longunderline">{{ purchaserName }}</span>
+    with whom I/we have entered into agreement of hire purchase/lease/hypothecation
+    </p>
+<div class="flex">
+<p>Date</p>
+<p>Signature of the financer</p>
+
+</div>
+
+<strong class="middle">Office Endrosment<strong/>
+<p>No <span class="underline"></span> Date <span class="underline"></span>Office of the <span class="longunderline"></span> The transfer of ownership of vehicle has been recorded with effect from <span class="underline"></span>on the Regisatration Certificate on the vehicle <span class="longunderline"></span>
+and in the registration of theis office
+</p>
+
+<p>To,</p>
+<span class="longunderline"></span>
+<div class="flex">
+<p>Name and the Address of the Financer</p>
+<p>Registration Authority</p>
+</div>
+<strong class="middle">By registered post delivered under proper acknowledgement Specimen Signature of the Transfree</strong>
+
+<div class="flex">
+<div>
+<strong>P</strong></br>
+(1)<span class="underline"></span>
+</div>
+<div>
+<strong>P</strong></br>
+(2)<span class="underline"></span>
+</div>
+</div>
+      </form>
+    
+        
+</div>
+        </div>
+    
+    </body>
+    </html>

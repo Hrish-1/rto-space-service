@@ -45,7 +45,7 @@ const entrySchema = new Schema({
   insuranceProofPdfName: { type: String },
   pancardProofPdfName: { type: String },
   addressProofPdfName: { type: String },
-  form30Part1: { type: String },
+  form30part1: { type: String },
   form30part2: { type: String },
   form29: { type: String },
 }, { timestamps: true }); // This option adds `createdAt` and `updatedAt` fields

@@ -18,7 +18,6 @@ const auth = asyncHandler(async (req, res, next) => {
 
             next()
         } catch (error) {
-            console.error(error)
             switch (error.name) {
                 case 'TokenExpiredError':
                     res.status(401)
