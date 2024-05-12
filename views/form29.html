@@ -57,14 +57,14 @@
 <p>To, </p>
 <br/>
 <p>The Registering Authority<span class="longunderline"></span> (in whose jurisdiction the Transferee resides )</p>
-        <p> I/We<span class="longunderline"></span>     </p>
+<p> I/We<span class="longunderline">{{ sellerName }}</span>     </p>
         <p>Son/wife/daughter of : <span class="underline"></span>     </p>
-        <p>Resident  <span class="longunderline"></span > have on the Vehicle No Make <span class="underline"></span> Chasis No 
-        <span class="underline"></span> Engine No <span class="underline"></span> 
+        <p>Resident  <span class="longunderline">{{ sellerAddress }}</span > have on the Vehicle No Make <span class="underline">{{ vehicleNo }}</span> Chasis No 
+        <span class="underline">{{ chasisNo }}</span> Engine No <span class="underline"></span> 
         
-        To Shri/Smt. <span class="underline"></span>(Name)son/wife/daughter of <span class="underline"></span> residing at  
-        <span class="longunderline"></span>(House No/street/Village Town/dist and State) under an agreement of hire 
-        purchase/lease hypothecation with <span class="underline"></span> The registration certificate and insurance Certificate have been handed over tomhim/her/them.
+        To Shri/Smt. <span class="underline">{{ purchaserName }}</span>(Name)son/wife/daughter of <span class="underline"></span> residing at  
+        <span class="longunderline">{{ purchaserAddress }}</span>(House No/street/Village Town/dist and State) under an agreement of hire 
+        purchase/lease hypothecation with <span class="underline"></span> The registration certificate and insurance Certificate have been handed over to him/her/them.
         To the best of my/our Knowledge and belief the vehicle is not superior and free encumbrance and information furnished is true I/We undertake to hold my.our self responsible for any inaccuracy or suppresion of information
 
         </form>
@@ -80,7 +80,7 @@
         </div>   
         
 </div>
-<p>I/We <span class="longunderline"></span>(Transferee) Copy to the Registering Authority <span class="longunderline"></span> in whose jurisdiction the transfere resides <br></p>
+<p>I/We <span class="longunderline">{{ purchaserName }}</span>(Transferee) Copy to the Registering Authority <span class="longunderline"></span> in whose jurisdiction the transfere resides <br></p>
 Note: To be sent to the Registering Authority by registered post acknowledgement due <span class="longunderline"></span>       
 </div>
     
