@@ -12,6 +12,7 @@ import deliveryRoutes from './routes/deliveryRoutes.js'
 import dotenv from 'dotenv';
 import errorHandler from './layers/errorLayer.js';
 import Handlebars from 'handlebars';
+import fs from 'fs'
 
 
 dotenv.config({ path: `./.env.${process.env.NODE_ENV}` });
@@ -28,6 +29,25 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 Handlebars.registerHelper("inc", (value, _) => parseInt(value) + 1);
 
 connectDB()
+
+function createDirectories() {
+  const uploadsDir = './uploads';
+  !fs.existsSync(uploadsDir) && fs.mkdirSync(uploadsDir)
+
+  const imgDir = './images'
+  !fs.existsSync(imgDir) && fs.mkdirSync(imgDir)
+
+  const invoiceDir = './invoices'
+  !fs.existsSync(invoiceDir) && fs.mkdirSync(invoiceDir)
+
+  const deliveryDir = './deliveries'
+  !fs.existsSync(deliveryDir) && fs.mkdirSync(deliveryDir)
+
+  const formDir = './forms'
+  !fs.existsSync(formDir) && fs.mkdirSync(formDir)
+}
+
+createDirectories()
 
 // Serve static files from "uploads" directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
