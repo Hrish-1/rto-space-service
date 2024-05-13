@@ -6,7 +6,7 @@ import { generateEntryID, convertToRupeesInWords } from '../utils.js';
 import InvoiceNumber from '../models/invoiceCount.js';
 import DeliveryNumber from '../models/deliveryCount.js';
 
-import html_to_pdf from 'html-pdf-node';
+import { generatePdfs, generatePdf } from '../utils/htmlToPdf.js'
 import partnerMaster from '../models/partnerMaster.js';
 import Invoice from '../models/invoice.js';
 import asyncHandler from '../layers/asyncHandler.js';
@@ -123,11 +123,8 @@ async function generateForms(entryData) {
     { content: Handlebars.compile(form29templateHtml)(dataBinding), path: form29outputPath }
   ]
   let options = { format: 'A4' };
-  const results = await html_to_pdf.generatePdfs(files, options);
+  await generatePdfs(files, options);
 
-  for (const result of results) {
-    fs.writeFileSync(result.path, result.buffer);
-  }
   return {
     form30part1: `${process.env.BASE_URL}` + form30p1outputPath.slice(1),
     form30part2: `${process.env.BASE_URL}` + form30p2outputPath.slice(1),
@@ -204,7 +201,7 @@ export const deleteTransaction = asyncHandler(async (req, res) => {
   res.status(204).send()
 })
 
-export const generatepdf = asyncHandler(async (req, res) => {
+export const generateInvoicePdf = asyncHandler(async (req, res) => {
 
   const customerId = req.body.customerId
   const entryIds = req.body.transactionIds
@@ -267,8 +264,6 @@ export const generatepdf = asyncHandler(async (req, res) => {
   const template = Handlebars.compile(templateHtml)
   const htmlContent = template(dataBinding)
 
-  let options = { format: 'A4' };
-  let file = { content: htmlContent };
 
   const now = new Date();
 
@@ -278,14 +273,10 @@ export const generatepdf = asyncHandler(async (req, res) => {
 
   const outputPath = `./invoices/${customerId}_${dateTimeString}.pdf`;
 
-  await new Promise((resolve, reject) => html_to_pdf.generatePdf(file, options, (_, buffer) => {
-    try {
-      fs.writeFileSync(outputPath, buffer);
-      resolve()
-    } catch (err) {
-      reject(err)
-    }
-  }))
+  let options = { format: 'A4' };
+  let file = { content: htmlContent, path: outputPath };
+
+  await generatePdf(file, options);
 
   const invoicePdfUrl = `${process.env.BASE_URL}/invoices/${customerId}_${dateTimeString}.pdf`
 
@@ -399,8 +390,6 @@ export const generateDeliveryPdf = asyncHandler(async (req, res) => {
   const template = Handlebars.compile(templateHtml)
   const htmlContent = template(dataBinding)
 
-  let options = { format: 'A4' };
-  let file = { content: htmlContent };
 
   const now = new Date();
 
@@ -409,15 +398,10 @@ export const generateDeliveryPdf = asyncHandler(async (req, res) => {
 
 
   const outputPath = `./deliveries/${toRto}_${dateTimeString}.pdf`;
+  let options = { format: 'A4' };
+  let file = { content: htmlContent, path: outputPath };
 
-  await new Promise((resolve, reject) => html_to_pdf.generatePdf(file, options, (_, buffer) => {
-    try {
-      fs.writeFileSync(outputPath, buffer);
-      resolve()
-    } catch (err) {
-      reject(err)
-    }
-  }))
+  await generatePdf(file, options);
 
   const deliveryPdfUrl = `${process.env.BASE_URL}/deliveries/${toRto}_${dateTimeString}.pdf`
 
